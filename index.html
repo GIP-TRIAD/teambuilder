@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Builder</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root {
+  --bg: #ffffff;
+  --bg-secondary: #f5f5f4;
+  --bg-tertiary: #f0efed;
+  --bg-info: #e6f1fb;
+  --bg-warn: #faeeda;
+  --bg-danger: #fcebeb;
+  --bg-success: #eaf3de;
+  --text: #1a1a18;
+  --text-secondary: #5f5e5a;
+  --text-tertiary: #888780;
+  --text-info: #185fa5;
+  --text-warn: #854f0b;
+  --text-danger: #a32d2d;
+  --text-success: #3b6d11;
+  --border: rgba(0,0,0,0.12);
+  --border-md: rgba(0,0,0,0.22);
+  --border-strong: rgba(0,0,0,0.32);
+  --border-info: #b5d4f4;
+  --border-warn: #fac775;
+  --border-danger: #f09595;
+  --border-success: #c0dd97;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --font: system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1c1a;
+    --bg-secondary: #252523;
+    --bg-tertiary: #2c2c2a;
+    --bg-info: #0c2e52;
+    --bg-warn: #3d2500;
+    --bg-danger: #3b1212;
+    --bg-success: #162807;
+    --text: #e8e6e0;
+    --text-secondary: #a8a69e;
+    --text-tertiary: #6e6c66;
+    --text-info: #85b7eb;
+    --text-warn: #fac775;
+    --text-danger: #f09595;
+    --text-success: #97c459;
+    --border: rgba(255,255,255,0.1);
+    --border-md: rgba(255,255,255,0.18);
+    --border-strong: rgba(255,255,255,0.28);
+    --border-info: #185fa5;
+    --border-warn: #854f0b;
+    --border-danger: #a32d2d;
+    --border-success: #3b6d11;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);font-size:14px;color:var(--text);background:var(--bg-tertiary);min-height:100vh}
+.page{max-width:860px;margin:0 auto;padding:1.5rem 1rem 3rem}
+
+/* upload */
+.upload-wrap{display:flex;align-items:center;justify-content:center;min-height:60vh}
+.upload-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:2rem;width:100%;max-width:420px;text-align:center}
+.upload-card .icon{font-size:36px;color:var(--text-tertiary)}
+.upload-card h1{font-size:16px;font-weight:500;margin-top:12px}
+.upload-card p{font-size:12px;color:var(--text-secondary);margin-top:4px}
+.drop-zone{border:1.5px dashed var(--border-md);border-radius:var(--radius-lg);padding:2rem 1rem;margin:1.25rem 0;cursor:pointer;transition:background 0.15s}
+.drop-zone:hover,.drop-zone.over{background:var(--bg-secondary)}
+.drop-zone input[type=file]{display:none}
+.drop-hint{font-size:13px;color:var(--text-secondary);margin-top:8px}
+.drop-sub{font-size:11px;color:var(--text-tertiary);margin-top:5px}
+.csv-note{font-size:11px;color:var(--text-tertiary);margin-top:6px}
+.err-box{background:var(--bg-danger);color:var(--text-danger);border:0.5px solid var(--border-danger);border-radius:var(--radius);padding:8px 12px;font-size:12px;margin-top:10px;text-align:left}
+.err-box ul{margin:2px 0 0 16px}
+
+/* config */
+.config-wrap{display:flex;align-items:center;justify-content:center;min-height:60vh;padding:2rem 0}
+.config-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1.75rem;width:100%;max-width:520px}
+.config-card h1{font-size:16px;font-weight:500;margin-bottom:2px}
+.config-card .sub{font-size:12px;color:var(--text-secondary);margin-bottom:1.1rem}
+.uni-summary{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.1rem}
+.uni-chip{font-size:12px;padding:4px 9px;border-radius:999px;background:var(--bg-secondary);border:0.5px solid var(--border)}
+.field-row{display:flex;gap:12px;margin-bottom:1rem}
+.field{flex:1}
+.field label{display:block;font-size:11px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:5px}
+.field input[type=number]{width:100%;font-size:14px;padding:7px 9px;border:0.5px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:var(--font)}
+.field input[type=number]:focus{outline:2px solid var(--border-info);outline-offset:1px}
+.slots-hint{font-size:11px;color:var(--text-tertiary);margin-top:4px}
+.team-size-row{display:flex;align-items:center;gap:8px;padding:4px 0}
+.team-size-row .tsr-name{flex:1;font-size:13px}
+.team-size-row input[type=number]{width:70px;font-size:14px;padding:6px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:var(--font)}
+.section-title{font-size:11px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin:1.1rem 0 8px}
+.constraint-row{display:flex;align-items:flex-start;gap:8px;padding:7px 0;font-size:13px}
+.constraint-row input{margin-top:2px}
+.constraint-row .c-label{font-weight:500}
+.constraint-row .c-desc{font-size:11px;color:var(--text-secondary);margin-top:1px}
+.constraint-row.locked{opacity:0.7}
+.config-actions{display:flex;gap:8px;margin-top:1.3rem;align-items:center}
+
+/* app */
+.app-header{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:0.75rem}
+.app-title{font-size:16px;font-weight:500}
+.app-counter{font-size:13px;color:var(--text-secondary)}
+.app-header .spacer{flex:1}
+.warn-banner{background:var(--bg-warn);color:var(--text-warn);border:0.5px solid var(--border-warn);border-radius:var(--radius);padding:8px 12px;font-size:13px;margin-bottom:0.75rem;display:none}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:14px;align-items:start}
+@media(max-width:640px){.main{grid-template-columns:1fr}}
+
+/* team cards */
+.teams-col{display:flex;flex-direction:column;gap:12px}
+.team-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem}
+.team-card.dead{border-color:var(--border-danger);border-width:1px}
+.team-header{display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.team-name{font-weight:500;font-size:14px}
+.team-count{font-size:11px;color:var(--text-tertiary);flex:1}
+.badge{font-size:11px;padding:2px 7px;border-radius:var(--radius)}
+.badge-ok{background:var(--bg-success);color:var(--text-success)}
+.badge-warn{background:var(--bg-warn);color:var(--text-warn)}
+.badge-bad{background:var(--bg-danger);color:var(--text-danger)}
+.badge-neutral{background:var(--bg-secondary);color:var(--text-secondary)}
+
+.uni-columns{display:grid;grid-template-columns:repeat(auto-fit, minmax(90px, 1fr));gap:10px}
+.uni-column-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;opacity:0.85}
+.grid-pill{position:relative;font-size:12px;padding:5px 8px 5px 20px;border-radius:var(--radius);margin-bottom:5px;cursor:pointer;background:var(--bg-secondary);border:0.5px solid var(--border);transition:background 0.1s, opacity 0.1s}
+.grid-pill:hover{background:var(--bg-tertiary)}
+.grid-pill.locked{background:var(--bg-success);border-color:var(--border-success);color:var(--text-success);font-weight:500}
+.grid-pill.disabled{opacity:0.35;cursor:not-allowed;background:transparent}
+.grid-pill.disabled:hover{background:transparent}
+.pill-gender{position:absolute;left:7px;top:5px;font-size:11px;opacity:0.6}
+.pill-star{position:absolute;right:4px;top:3px;font-size:10px;line-height:1}
+.pill-star.star-1{color:#d4a017}
+.pill-star.star-2{color:var(--text-tertiary)}
+
+/* side panels */
+.side-col{display:flex;flex-direction:column;gap:12px}
+.panel{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem}
+.panel-title{font-size:11px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px}
+.legend{font-size:11px;color:var(--text-secondary);display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.legend > div{display:flex;align-items:center;gap:6px}
+
+/* metrics */
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
+.metric{background:var(--bg-secondary);border-radius:var(--radius);padding:8px 10px}
+.metric-val{font-size:20px;font-weight:500}
+.metric-label{font-size:11px;color:var(--text-secondary);margin-top:2px}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:4px}
+.progress-fill{height:100%;background:#1d9e75;border-radius:2px;transition:width 0.3s}
+
+/* buttons */
+.actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+button{cursor:pointer;font-family:var(--font)}
+button:disabled{cursor:not-allowed;opacity:0.5}
+.btn{font-size:12px;padding:5px 10px;border-radius:var(--radius);border:0.5px solid var(--border-md);background:transparent;color:var(--text)}
+.btn:hover:not(:disabled){background:var(--bg-secondary)}
+.btn-primary{background:var(--text-info);color:#fff;border-color:var(--text-info)}
+.btn-primary:hover:not(:disabled){opacity:0.9}
+.btn-danger{color:var(--text-danger);border-color:var(--border-danger)}
+.btn-danger:hover:not(:disabled){background:var(--bg-danger)}
+
+/* csv footer */
+.csv-footer{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.csv-info{font-size:11px;color:var(--text-tertiary);flex:1}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Upload screen -->
+  <div id="upload-screen">
+    <div class="upload-wrap">
+      <div class="upload-card">
+        <i class="ti ti-users icon" aria-hidden="true"></i>
+        <h1>Team builder</h1>
+        <p>Upload a CSV to get started — your data stays in your browser.</p>
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('csv-input').click()">
+          <i class="ti ti-upload" style="font-size:24px;color:var(--text-tertiary)" aria-hidden="true"></i>
+          <input type="file" id="csv-input" accept=".csv,text/csv">
+          <div class="drop-hint">Click to browse or drag a CSV here</div>
+          <div class="drop-sub">Required columns: name · university · gender (M/F or Male/Female)</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
+          <span class="csv-note">Example:</span>
+          <button class="btn" onclick="downloadTemplate()" style="font-size:11px;padding:3px 8px">
+            <i class="ti ti-download" style="font-size:12px;vertical-align:-1px" aria-hidden="true"></i> Download template
+          </button>
+        </div>
+        <pre style="font-size:11px;color:var(--text-tertiary);margin-top:4px;text-align:left;background:var(--bg-secondary);padding:8px;border-radius:var(--radius);overflow:auto">name,university,gender
+Chen,Singapore,M
+Lulu,Singapore,F
+Lin,Singapore,F
+Yu,Singapore,M
+Chau,Singapore,F
+Marcel,Marseille,M
+Dominique,Marseille,F
+Roger,Marseille,M
+Gerard,Marseille,M
+Giovanni,Naples,M
+Mario,Naples,M
+Vincente,Naples,M
+Antonella,Naples,F
+Cristina,Naples,F</pre>
+        <div class="err-box" id="csv-err" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Config screen -->
+  <div id="config-screen" style="display:none">
+    <div class="config-wrap">
+      <div class="config-card">
+        <h1>Set up teams</h1>
+        <div class="sub" id="config-sub"></div>
+        <div class="uni-summary" id="config-uni-summary"></div>
+
+        <div class="field-row">
+          <div class="field" style="max-width:160px">
+            <label for="cfg-num-teams">Number of teams</label>
+            <input type="number" id="cfg-num-teams" min="1">
+          </div>
+        </div>
+        <div class="section-title">Team sizes</div>
+        <div id="config-team-sizes"></div>
+        <div class="slots-hint" id="config-slots-hint"></div>
+        <button class="btn" style="margin-top:8px" onclick="distributeEvenly()">Distribute evenly</button>
+
+        <div class="section-title">Constraints</div>
+        <div id="config-constraints"></div>
+
+        <div class="err-box" id="config-err" style="display:none"></div>
+
+        <div class="config-actions">
+          <button class="btn btn-primary" id="cfg-build-btn" onclick="runSolve()">Build teams</button>
+          <button class="btn" onclick="backToUpload()">Use a different CSV</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- App screen -->
+  <div id="app-screen" style="display:none">
+    <div class="app-header">
+      <span class="app-title">Team builder</span>
+      <span class="app-counter" id="counter"></span>
+      <span class="spacer"></span>
+      <button class="btn" onclick="backToConfig()">Edit setup</button>
+    </div>
+    <div class="warn-banner" id="warn-banner">
+      <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+      <span id="warn-text"></span>
+    </div>
+    <div class="main">
+      <div class="teams-col" id="teams-col"></div>
+      <div class="side-col">
+        <div class="panel">
+          <div class="panel-title">Valid arrangements</div>
+          <div class="metrics">
+            <div class="metric">
+              <div class="metric-val" id="m-total">—</div>
+              <div class="metric-label">total valid</div>
+            </div>
+            <div class="metric">
+              <div class="metric-val" id="m-remain">—</div>
+              <div class="metric-label">still possible</div>
+              <div class="progress-bar"><div class="progress-fill" id="m-bar" style="width:100%"></div></div>
+            </div>
+          </div>
+          <div class="legend">
+            <div><span class="pill-star star-1" style="position:static">★</span> best remaining arrangement</div>
+            <div><span class="pill-star star-2" style="position:static">★</span> 2nd best remaining arrangement</div>
+            <div>Click a name to lock them into that team; click again to unlock.</div>
+          </div>
+          <div class="actions">
+            <button class="btn" onclick="resetAssignments()">Reset all</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="csv-footer">
+            <span class="csv-info" id="csv-info"></span>
+            <button class="btn" onclick="document.getElementById('csv-reload').click()">
+              <i class="ti ti-upload" style="font-size:13px;vertical-align:-1px" aria-hidden="true"></i> New CSV
+            </button>
+            <button class="btn btn-danger" onclick="clearData()">
+              <i class="ti ti-trash" style="font-size:13px;vertical-align:-1px" aria-hidden="true"></i> Clear
+            </button>
+            <input type="file" id="csv-reload" accept=".csv,text/csv" style="display:none">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+'use strict';
+/* ======================================================================
+   STORE — single source of truth. Every mutation goes through setState;
+   every render reads only from getState(). No other globals hold state.
+   ====================================================================== */
+const Store = (() => {
+  let state = {
+    screen: 'upload',            // 'upload' | 'config' | 'app'
+    students: [],                // [{id,name,uni,gender}]
+    numTeams: 2,
+    teamSizes: [7, 7],           // one entry per team; teams need not be equal size
+    constraintToggles: { uniCoverage: true, genderBalance: true },
+    solveResult: { solutions: [], capped: false, errors: [], nodesExplored: 0 },
+    assignments: {},             // studentId -> teamIndex, only present once locked
+  };
+  const listeners = [];
+  return {
+    getState: () => state,
+    setState(patch) {
+      state = { ...state, ...(typeof patch === 'function' ? patch(state) : patch) };
+      listeners.forEach(fn => fn(state));
+    },
+    subscribe(fn) { listeners.push(fn); },
+  };
+})();
+
+/* ======================================================================
+   CONSTRAINTS REGISTRY
+   Hard constraints: check(team, ctx) -> bool, evaluated after every
+   member is added (not just once the team is full). A constraint should
+   return true if it's satisfied OR still achievable with the capacity
+   remaining, and false the moment it's satisfied-or-not is decided
+   negatively — that's what lets the solver prune a branch as soon as
+   it's provably dead, instead of only finding out once the team fills.
+   Soft constraints: score(team) -> number, 0 = ideal, lower is better.
+   To add a new constraint (skill level, must/must-not pair, past team
+   history, ...) push a new object here. Nothing else needs to change —
+   the solver, validator and config-screen UI all read from these lists.
+   ====================================================================== */
+const HARD_CONSTRAINTS = [
+  {
+    id: 'uniCoverage',
+    label: 'Every team includes every university',
+    desc: 'Hard requirement — disabling this removes the diversity guarantee entirely.',
+    locked: true, // always on; kept as a flag so future hard constraints can be optional
+    check(team, ctx) {
+      const present = new Set(team.map(s => s.uni));
+      const missing = ctx.allUnis.filter(u => !present.has(u));
+      if (missing.length === 0) return true; // satisfied the moment every uni is present — no need to wait for the team to fill up
+      const remainingSlots = ctx.capacity - team.length;
+      return remainingSlots >= missing.length; // still achievable with what's left; false = provably dead, prune now
+    },
+  },
+];
+
+const SOFT_CONSTRAINTS = [
+  {
+    id: 'genderBalance',
+    label: 'Balance gender within each team',
+    desc: 'Ranks arrangements so male/female counts per team are as close as possible.',
+    weight: 1,
+    score(team) {
+      const m = team.filter(s => s.gender === 'M').length;
+      return Math.abs(m - (team.length - m));
+    },
+  },
+];
+
+function activeHardConstraints(toggles) {
+  return HARD_CONSTRAINTS.filter(c => c.locked || toggles[c.id]);
+}
+function activeSoftConstraints(toggles) {
+  return SOFT_CONSTRAINTS.filter(c => toggles[c.id] !== false);
+}
+function totalSoftScore(solution, softConstraints) {
+  let total = 0;
+  for (const team of solution) for (const c of softConstraints) total += c.weight * c.score(team);
+  return total;
+}
+
+/* ======================================================================
+   VALIDATION — checked explicitly before ever running the solver, so a
+   bad configuration produces a readable message instead of a silent
+   empty result.
+   ====================================================================== */
+function evenSplit(total, numTeams) {
+  // Distributes `total` as evenly as possible across `numTeams` teams,
+  // e.g. evenSplit(14, 3) -> [5, 5, 4]. Extra members go to the first
+  // teams rather than being silently dropped (the old floor()-based
+  // TEAM_SIZE calculation used to just discard the remainder).
+  if (numTeams < 1) return [];
+  const base = Math.floor(total / numTeams);
+  const remainder = total % numTeams;
+  return Array.from({ length: numTeams }, (_, i) => base + (i < remainder ? 1 : 0));
+}
+
+function validateConfig(students, numTeams, teamSizes) {
+  const errors = [];
+  const total = students.length;
+
+  if (!Number.isFinite(numTeams) || numTeams < 1) errors.push('Number of teams must be at least 1.');
+  if (!Array.isArray(teamSizes) || teamSizes.length !== numTeams || teamSizes.some(n => !Number.isFinite(n) || n < 1)) {
+    errors.push('Every team needs a size of at least 1.');
+  }
+  if (errors.length) return { ok: false, errors, unis: [] };
+
+  const slots = teamSizes.reduce((a, b) => a + b, 0);
+  if (slots !== total) {
+    errors.push(
+      `Team sizes add up to ${slots} slots, but there ${total === 1 ? 'is' : 'are'} ${total} student(s). ` +
+      `Adjust team sizes so they add up to exactly ${total}` +
+      (total > slots ? `, or accept that ${total - slots} student(s) will be left unassigned.` : '.')
+    );
+  }
+
+  const counts = {};
+  students.forEach(s => { counts[s.uni] = (counts[s.uni] || 0) + 1; });
+  const unis = Object.keys(counts).sort();
+
+  const minTeamSize = teamSizes.length ? Math.min(...teamSizes) : 0;
+  if (minTeamSize < unis.length) {
+    errors.push(`The smallest team (${minTeamSize}) is below the number of universities (${unis.length}), so that team can never include all of them.`);
+  }
+  for (const u of unis) {
+    if (counts[u] < numTeams) {
+      errors.push(`"${u}" has only ${counts[u]} student(s) — fewer than the ${numTeams} teams, so not every team can get one.`);
+    }
+  }
+  return { ok: errors.length === 0, errors, unis };
+}
+
+/* ======================================================================
+   SOLVER — backtracking with pruning.
+   Students are assigned one at a time (scarcest-university first, so
+   the hardest placements fail fast — this ordering is purely a search
+   heuristic and doesn't affect which solutions are found). Every team
+   is treated as genuinely distinct, even ones with equal size — team
+   identity matters here since students get locked into specific named
+   teams by the person using the app, so "Team Alpha gets group X" and
+   "Team Beta gets group X" are different, meaningful outcomes, not
+   redundant relabelings to dedupe away. Hard constraints are checked
+   after every single addition (not just once a team fills up) so whole
+   branches get cut the moment they're provably dead.
+   ====================================================================== */
+function generateSolutions(students, numTeams, teamSizes, hardConstraints, softConstraints, opts = {}) {
+  const { maxSolutions = 500, maxNodes = 2_000_000 } = opts;
+  const validation = validateConfig(students, numTeams, teamSizes);
+  if (!validation.ok) return { solutions: [], capped: false, errors: validation.errors, nodesExplored: 0 };
+
+  const allUnis = validation.unis;
+  const order = [...students].sort((a, b) => {
+    const ca = students.filter(s => s.uni === a.uni).length;
+    const cb = students.filter(s => s.uni === b.uni).length;
+    return ca - cb;
+  });
+
+  const teams = Array.from({ length: numTeams }, () => []);
+  const solutions = [];
+  let nodes = 0;
+  let capped = false;
+
+  function backtrack(i) {
+    if (capped) return;
+    if (++nodes > maxNodes) { capped = true; return; }
+    if (i === order.length) {
+      solutions.push(teams.map(t => t.slice()));
+      if (solutions.length >= maxSolutions) capped = true;
+      return;
+    }
+    const student = order[i];
+    for (let ti = 0; ti < numTeams; ti++) {
+      if (teams[ti].length >= teamSizes[ti]) continue;
+      teams[ti].push(student);
+      const isComplete = teams[ti].length === teamSizes[ti];
+      const ok = hardConstraints.every(c => c.check(teams[ti], { allUnis, isComplete, capacity: teamSizes[ti] }));
+      if (ok) backtrack(i + 1);
+      teams[ti].pop();
+      if (capped) return;
+    }
+  }
+  backtrack(0);
+  solutions.sort((a, b) => totalSoftScore(a, softConstraints) - totalSoftScore(b, softConstraints));
+  return { solutions, capped, errors: [], nodesExplored: nodes };
+}
+
+/* ======================================================================
+   EXISTENCE CHECK — a second, separate search used only to answer
+   "given the current locks, does at least one valid completion exist?"
+   This is deliberately NOT implemented by scanning generateSolutions'
+   capped sample: that sample can genuinely miss valid labelings once
+   the true solution count exceeds the cap (verified — a config with 15
+   students / 5 teams of 3 has 500,000+ valid arrangements, all sharing
+   structure but assigned to different named teams), which would grey
+   out pills that are actually clickable. Existence only needs to find
+   ONE match, so it can stop at the first hit — cheap even when the full
+   space is huge. Proving *infeasibility* still requires exhausting the
+   space in the worst case, so it's node-capped and fails OPEN (treats
+   "search exhausted the budget without finding one" as feasible) —
+   greying is a UX aid, not a hard gate, so an occasional missed grey-out
+   in a pathological config is far preferable to ever blocking a click
+   that was genuinely valid.
+   ====================================================================== */
+function existsValidCompletion(students, numTeams, teamSizes, hardConstraints, assignments, opts = {}) {
+  const { maxNodes = 300_000 } = opts;
+  const validation = validateConfig(students, numTeams, teamSizes);
+  if (!validation.ok) return false;
+  const allUnis = validation.unis;
+
+  const teams = Array.from({ length: numTeams }, () => []);
+  for (const st of students) {
+    const ti = assignments[st.id];
+    if (ti !== undefined) {
+      if (teams[ti].length >= teamSizes[ti]) return false; // overcommitted
+      teams[ti].push(st);
+    }
+  }
+  // A team that's already full purely from locks must already satisfy hard constraints.
+  for (let ti = 0; ti < numTeams; ti++) {
+    if (teams[ti].length === teamSizes[ti]) {
+      const ok = hardConstraints.every(c => c.check(teams[ti], { allUnis, isComplete: true, capacity: teamSizes[ti] }));
+      if (!ok) return false;
+    }
+  }
+
+  const unlocked = students
+    .filter(st => assignments[st.id] === undefined)
+    .sort((a, b) => {
+      const ca = students.filter(s => s.uni === a.uni).length;
+      const cb = students.filter(s => s.uni === b.uni).length;
+      return ca - cb;
+    });
+
+  let found = false;
+  let nodes = 0;
+  function backtrack(i) {
+    if (found || nodes > maxNodes) return;
+    nodes++;
+    if (i === unlocked.length) { found = true; return; }
+    const student = unlocked[i];
+    for (let ti = 0; ti < numTeams && !found; ti++) {
+      if (teams[ti].length >= teamSizes[ti]) continue;
+      teams[ti].push(student);
+      const isComplete = teams[ti].length === teamSizes[ti];
+      const ok = hardConstraints.every(c => c.check(teams[ti], { allUnis, isComplete, capacity: teamSizes[ti] }));
+      if (ok) backtrack(i + 1);
+      teams[ti].pop();
+    }
+  }
+  backtrack(0);
+  return found || nodes > maxNodes; // fail open if the budget ran out before proving infeasibility
+}
+
+/* ======================================================================
+   FORCED-MOVE PROPAGATION
+   After any lock changes, some other student may end up with exactly one
+   remaining feasible team — at that point it's not a choice anymore, it's
+   a deduction, so we make it automatically. Locking that student can in
+   turn force another, so this repeats to a fixpoint. This deliberately
+   does NOT try to auto-resolve situations that are merely *symmetric*
+   (e.g. 3 interchangeable students for 3 open teams with no other locks
+   yet) — nothing pins a specific student to a specific team there, so
+   there's nothing to correctly deduce until a first real choice is made;
+   this only ever acts once a choice is provably the only one left.
+   ====================================================================== */
+function propagateForcedMoves(state) {
+  const hard = activeHardConstraints(state.constraintToggles);
+  let assignments = { ...state.assignments };
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const student of state.students) {
+      if (assignments[student.id] !== undefined) continue; // already locked
+      let feasibleCount = 0, feasibleTeam = -1;
+      for (let ti = 0; ti < state.numTeams; ti++) {
+        const test = { ...assignments, [student.id]: ti };
+        if (existsValidCompletion(state.students, state.numTeams, state.teamSizes, hard, test)) {
+          feasibleCount++;
+          feasibleTeam = ti;
+          if (feasibleCount > 1) break; // not forced — no need to keep checking
+        }
+      }
+      if (feasibleCount === 0) return assignments; // board already dead; stop, let the warning banner handle it
+      if (feasibleCount === 1) {
+        assignments[student.id] = feasibleTeam;
+        changed = true;
+      }
+    }
+  }
+  return assignments;
+}
+
+/* ======================================================================
+   CSV
+   ====================================================================== */
+function splitCSVLine(line) {
+  // Minimal quoted-field support: "a,b",c -> ['a,b','c']
+  const out = [];
+  let cur = '', inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+      else if (ch === '"') inQuotes = false;
+      else cur += ch;
+    } else {
+      if (ch === '"') inQuotes = true;
+      else if (ch === ',') { out.push(cur); cur = ''; }
+      else cur += ch;
+    }
+  }
+  out.push(cur);
+  return out.map(s => s.trim());
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return { err: 'CSV must have a header row and at least one student.' };
+  const headers = splitCSVLine(lines[0]).map(h => h.toLowerCase().replace(/[^a-z]/g, ''));
+  const ni = headers.indexOf('name'), ui = headers.indexOf('university'), gi = headers.indexOf('gender');
+  if (ni < 0 || ui < 0 || gi < 0) return { err: `Missing columns. Found: "${headers.join(', ')}". Need: name, university, gender.` };
+  const students = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = splitCSVLine(lines[i]);
+    if (cols.length < 3) continue;
+    const name = cols[ni], uni = cols[ui], gRaw = (cols[gi] || '').toLowerCase();
+    const gender = (gRaw === 'm' || gRaw === 'male') ? 'M' : (gRaw === 'f' || gRaw === 'female') ? 'F' : null;
+    if (!name || !uni || !gender) return { err: `Row ${i + 1}: invalid data. Gender must be M/F or Male/Female.` };
+    students.push({ id: `s${i}`, name, uni, gender });
+  }
+  if (students.length < 2) return { err: 'Need at least 2 students to form teams.' };
+  return { students };
+}
+
+const TEMPLATE_CSV = `name,university,gender
+Chen,Singapore,M
+Lulu,Singapore,F
+Lin,Singapore,F
+Yu,Singapore,M
+Chau,Singapore,F
+Marcel,Marseille,M
+Dominique,Marseille,F
+Roger,Marseille,M
+Gerard,Marseille,M
+Giovanni,Naples,M
+Mario,Naples,M
+Vincente,Naples,M
+Antonella,Naples,F
+Cristina,Naples,F`;
+
+function downloadTemplate() {
+  const blob = new Blob([TEMPLATE_CSV], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'students_template.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* ======================================================================
+   PERSISTENCE
+   ====================================================================== */
+const STORAGE_KEY = 'teambuilder-v4'; // bumped: schema changed from placements grid to assignments map
+function saveToStorage() {
+  const s = Store.getState();
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      students: s.students, numTeams: s.numTeams, teamSizes: s.teamSizes,
+      constraintToggles: s.constraintToggles, screen: s.screen === 'app' ? 'app' : 'config',
+      assignments: s.assignments,
+    }));
+  } catch (e) {}
+}
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const saved = JSON.parse(raw);
+    if (!saved || !saved.students || !saved.students.length) return false;
+    Store.setState({
+      students: saved.students, numTeams: saved.numTeams, teamSizes: saved.teamSizes,
+      constraintToggles: saved.constraintToggles || { uniCoverage: true, genderBalance: true },
+      screen: 'config',
+    });
+    if (saved.screen === 'app') {
+      runSolve();
+      if (saved.assignments) Store.setState({ assignments: saved.assignments });
+    }
+    return true;
+  } catch (e) { return false; }
+}
+function clearData() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+  Store.setState({
+    screen: 'upload', students: [], solveResult: { solutions: [], capped: false, errors: [], nodesExplored: 0 },
+    assignments: {},
+  });
+}
+
+/* ======================================================================
+   DERIVED HELPERS
+   ====================================================================== */
+function getUnis(students) { return [...new Set(students.map(s => s.uni))].sort(); }
+
+function isConsistentWithAssignments(sol, assignments) {
+  for (const studentId in assignments) {
+    const ti = assignments[studentId];
+    if (!sol[ti].some(s => s.id === studentId)) return false;
+  }
+  return true;
+}
+function getFilteredSolutions(state) {
+  return state.solveResult.solutions.filter(sol => isConsistentWithAssignments(sol, state.assignments));
+}
+function getTeamMembers(state, ti) {
+  return state.students.filter(s => state.assignments[s.id] === ti);
+}
+// Would locking `studentId` into team `ti` still leave at least one valid arrangement,
+// given everything already locked elsewhere? Uses the exact existence-check solver
+// (existsValidCompletion), not the capped ranking sample — see comment on that
+// function for why the sample alone isn't reliable enough for this.
+function isFeasibleHere(state, studentId, ti) {
+  const hard = activeHardConstraints(state.constraintToggles);
+  const testAssignments = { ...state.assignments, [studentId]: ti };
+  return existsValidCompletion(state.students, state.numTeams, state.teamSizes, hard, testAssignments);
+}
+// Is the current set of locks (with no further changes) still completable at all?
+function boardIsFeasible(state) {
+  const hard = activeHardConstraints(state.constraintToggles);
+  return existsValidCompletion(state.students, state.numTeams, state.teamSizes, hard, state.assignments);
+}
+// 1 = part of the #1 ranked remaining arrangement, 2 = part of the #2 ranked one (only
+// shown if there's more than one arrangement left), 0 = part of neither. This is
+// best-effort/sample-based (see generateSolutions) — fine for a "recommended pick"
+// hint, unlike isFeasibleHere/boardIsFeasible which must be exact.
+function starLevel(filtered, studentId, ti) {
+  if (filtered[0] && filtered[0][ti].some(s => s.id === studentId)) return 1;
+  if (filtered.length > 1 && filtered[1][ti].some(s => s.id === studentId)) return 2;
+  return 0;
+}
+function genderBadge(members) {
+  if (!members.length) return ['', 'neutral'];
+  const m = members.filter(x => x.gender === 'M').length, f = members.length - m, d = Math.abs(m - f);
+  return [`${m}M ${f}F`, d === 0 ? 'ok' : d === 1 ? 'warn' : 'bad'];
+}
+// One entry per university: 'ok' once that university has a member on this team,
+// 'bad' once the team no longer has enough empty slots left to cover every still-missing
+// university (so this one's coverage is provably dead too), 'neutral' while still achievable.
+function uniPillStates(members, unis, capacity) {
+  const present = new Set(members.map(x => x.uni));
+  const missing = unis.filter(u => !present.has(u));
+  const remainingSlots = capacity - members.length;
+  const overallDead = remainingSlots < missing.length;
+  return unis.map(u => ({ uni: u, state: present.has(u) ? 'ok' : (overallDead ? 'bad' : 'neutral') }));
+}
+const UNI_COLORS = [
+  { bg: '#e6f1fb', fg: '#185fa5' }, { bg: '#eeedfe', fg: '#534ab7' },
+  { bg: '#eaf3de', fg: '#3b6d11' }, { bg: '#faeeda', fg: '#854f0b' },
+  { bg: '#fbeaf0', fg: '#993556' },
+];
+function uniColor(uni, unis) {
+  const idx = Math.max(0, unis.indexOf(uni) % UNI_COLORS.length);
+  return UNI_COLORS[idx];
+}
+const TEAM_NAMES_POOL = ['Team Alpha', 'Team Beta', 'Team Gamma', 'Team Delta', 'Team Epsilon', 'Team Zeta'];
+function teamName(i) { return TEAM_NAMES_POOL[i] || `Team ${i + 1}`; }
+
+/* ======================================================================
+   ACTIONS
+   ====================================================================== */
+function handleCSV(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const errEl = document.getElementById('csv-err');
+    errEl.style.display = 'none';
+    const result = parseCSV(e.target.result);
+    if (result.err) { errEl.textContent = result.err; errEl.style.display = 'block'; return; }
+    const unis = getUnis(result.students);
+    const numTeams = unis.length || 1;
+    Store.setState({
+      screen: 'config', students: result.students, numTeams, teamSizes: evenSplit(result.students.length, numTeams),
+      constraintToggles: { uniCoverage: true, genderBalance: true },
+      solveResult: { solutions: [], capped: false, errors: [], nodesExplored: 0 },
+      assignments: {},
+    });
+    saveToStorage();
+  };
+  reader.readAsText(file);
+}
+function updateNumTeams(v) {
+  const s = Store.getState();
+  const numTeams = parseInt(v, 10) || 0;
+  Store.setState({ numTeams, teamSizes: evenSplit(s.students.length, Math.max(numTeams, 0)) });
+  saveToStorage();
+}
+function updateTeamSizeAt(idx, v) {
+  const s = Store.getState();
+  const teamSizes = s.teamSizes.slice();
+  teamSizes[idx] = parseInt(v, 10) || 0;
+  Store.setState({ teamSizes });
+  saveToStorage();
+}
+function distributeEvenly() {
+  const s = Store.getState();
+  Store.setState({ teamSizes: evenSplit(s.students.length, s.numTeams) });
+  saveToStorage();
+}
+function toggleConstraint(id) {
+  const s = Store.getState();
+  Store.setState({ constraintToggles: { ...s.constraintToggles, [id]: !s.constraintToggles[id] } });
+  saveToStorage();
+}
+function backToUpload() {
+  Store.setState({ screen: 'upload', students: [] });
+}
+function backToConfig() {
+  Store.setState({ screen: 'config' });
+  saveToStorage();
+}
+function runSolve() {
+  const s = Store.getState();
+  const validation = validateConfig(s.students, s.numTeams, s.teamSizes);
+  if (!validation.ok) {
+    Store.setState({ solveResult: { solutions: [], capped: false, errors: validation.errors, nodesExplored: 0 } });
+    return;
+  }
+  const hard = activeHardConstraints(s.constraintToggles);
+  const soft = activeSoftConstraints(s.constraintToggles);
+  const result = generateSolutions(s.students, s.numTeams, s.teamSizes, hard, soft);
+  const assignments = propagateForcedMoves({ ...s, solveResult: result, assignments: {} });
+  Store.setState({ screen: 'app', solveResult: result, assignments });
+  saveToStorage();
+}
+// Click a student's pill inside a team's column: locks them there if it's still
+// feasible, or unlocks them if they were already locked to this exact team.
+// Clicking a pill that's locked to a *different* team, or one that's currently
+// infeasible here, is a no-op — the UI never wires those up as clickable anyway.
+// Any lock/unlock can newly force other students; propagateForcedMoves resolves
+// those before the state settles, so a single click can cascade through the board.
+function toggleLock(studentId, ti) {
+  const s = Store.getState();
+  const current = s.assignments[studentId];
+  let assignments;
+  if (current === ti) {
+    assignments = { ...s.assignments };
+    delete assignments[studentId];
+  } else {
+    if (current !== undefined) return; // locked to a different team — not this pill's call
+    if (!isFeasibleHere(s, studentId, ti)) return; // guard against stale clicks; UI already disables this case
+    assignments = { ...s.assignments, [studentId]: ti };
+  }
+  Store.setState({ assignments: propagateForcedMoves({ ...s, assignments }) });
+}
+function resetAssignments() {
+  const s = Store.getState();
+  Store.setState({ assignments: propagateForcedMoves({ ...s, assignments: {} }) });
+}
+
+/* ======================================================================
+   RENDER
+   ====================================================================== */
+function render() {
+  const s = Store.getState();
+  document.getElementById('upload-screen').style.display = s.screen === 'upload' ? '' : 'none';
+  document.getElementById('config-screen').style.display = s.screen === 'config' ? '' : 'none';
+  document.getElementById('app-screen').style.display = s.screen === 'app' ? '' : 'none';
+  if (s.screen === 'config') renderConfig(s);
+  if (s.screen === 'app') renderApp(s);
+}
+
+function renderConfig(s) {
+  const unis = getUnis(s.students);
+  const counts = {};
+  s.students.forEach(x => { counts[x.uni] = (counts[x.uni] || 0) + 1; });
+
+  document.getElementById('config-sub').textContent = `${s.students.length} students across ${unis.length} universities`;
+  document.getElementById('config-uni-summary').innerHTML =
+    unis.map(u => `<span class="uni-chip">${u} · ${counts[u]}</span>`).join('');
+
+  const numTeamsEl = document.getElementById('cfg-num-teams');
+  if (document.activeElement !== numTeamsEl) numTeamsEl.value = s.numTeams;
+  numTeamsEl.oninput = e => updateNumTeams(e.target.value);
+
+  const sizesList = document.getElementById('config-team-sizes');
+  sizesList.innerHTML = '';
+  s.teamSizes.forEach((sz, i) => {
+    const row = document.createElement('div');
+    row.className = 'team-size-row';
+    row.innerHTML = `<span class="tsr-name">${teamName(i)}</span><input type="number" min="1" id="cfg-size-${i}">`;
+    const input = row.querySelector('input');
+    if (document.activeElement !== input) input.value = sz;
+    input.oninput = e => updateTeamSizeAt(i, e.target.value);
+    sizesList.appendChild(row);
+  });
+
+  const slots = s.teamSizes.reduce((a, b) => a + b, 0);
+  document.getElementById('config-slots-hint').textContent =
+    `${slots} of ${s.students.length} students assigned to slots`;
+
+  const cList = document.getElementById('config-constraints');
+  cList.innerHTML = '';
+  [...HARD_CONSTRAINTS, ...SOFT_CONSTRAINTS].forEach(c => {
+    const isHard = HARD_CONSTRAINTS.includes(c);
+    const checked = isHard ? true : (s.constraintToggles[c.id] !== false);
+    const row = document.createElement('div');
+    row.className = 'constraint-row' + (c.locked ? ' locked' : '');
+    row.innerHTML = `
+      <input type="checkbox" id="c-${c.id}" ${checked ? 'checked' : ''} ${c.locked ? 'disabled' : ''}>
+      <label for="c-${c.id}" style="flex:1">
+        <div class="c-label">${c.label}${c.locked ? ' (required)' : ''}</div>
+        <div class="c-desc">${c.desc}</div>
+      </label>`;
+    if (!c.locked) row.querySelector('input').onchange = () => toggleConstraint(c.id);
+    cList.appendChild(row);
+  });
+
+  const validation = validateConfig(s.students, s.numTeams, s.teamSizes);
+  const errEl = document.getElementById('config-err');
+  if (!validation.ok) {
+    errEl.style.display = 'block';
+    errEl.innerHTML = `<strong>Can't build teams yet:</strong><ul>${validation.errors.map(e => `<li>${e}</li>`).join('')}</ul>`;
+  } else {
+    errEl.style.display = 'none';
+  }
+  document.getElementById('cfg-build-btn').disabled = !validation.ok;
+}
+
+function renderApp(s) {
+  renderTeams(s);
+  renderSummary(s);
+  renderWarn(s);
+}
+
+function renderTeams(s) {
+  const unis = getUnis(s.students);
+  const filtered = getFilteredSolutions(s);
+  const isDead = !boardIsFeasible(s);
+  const col = document.getElementById('teams-col');
+  col.innerHTML = '';
+  for (let ti = 0; ti < s.numTeams; ti++) {
+    const members = getTeamMembers(s, ti);
+    const [gLabel, gState] = genderBadge(members);
+    const uniPills = uniPillStates(members, unis, s.teamSizes[ti]);
+    const card = document.createElement('div');
+    card.className = 'team-card' + (isDead ? ' dead' : '');
+    card.innerHTML = `
+      <div class="team-header">
+        <span class="team-name">${teamName(ti)}</span>
+        <span class="team-count">${members.length}/${s.teamSizes[ti]}</span>
+        ${uniPills.map(p => `<span class="badge badge-${p.state}">${p.uni}</span>`).join('')}
+        <span class="badge badge-${gState}">${gLabel || 'gender'}</span>
+      </div>
+      <div class="uni-columns" id="cols-${ti}"></div>`;
+    col.appendChild(card);
+    const colsEl = document.getElementById(`cols-${ti}`);
+    unis.forEach(uni => {
+      const { fg } = uniColor(uni, unis);
+      const column = document.createElement('div');
+      column.className = 'uni-column';
+      column.innerHTML = `<div class="uni-column-title" style="color:${fg}">${uni}</div>`;
+      s.students.filter(st => st.uni === uni).forEach(student => {
+        const lockedTeam = s.assignments[student.id];
+        const isHere = lockedTeam === ti;
+        const isElsewhere = lockedTeam !== undefined && lockedTeam !== ti;
+        const feasible = lockedTeam === undefined ? isFeasibleHere(s, student.id, ti) : true;
+        const star = starLevel(filtered, student.id, ti);
+        const pill = document.createElement('div');
+        pill.className = 'grid-pill' + (isHere ? ' locked' : (isElsewhere || !feasible) ? ' disabled' : '');
+        pill.innerHTML =
+          (star === 1 ? '<span class="pill-star star-1">★</span>' : star === 2 ? '<span class="pill-star star-2">★</span>' : '') +
+          `<span class="pill-gender">${student.gender === 'M' ? '♂' : '♀'}</span>${student.name}`;
+        if (isElsewhere) {
+          pill.title = `Already locked to ${teamName(lockedTeam)}`;
+        } else if (!feasible) {
+          pill.title = 'Locking them here would leave no valid arrangement';
+        } else if (isHere) {
+          pill.title = 'Click to unlock';
+          pill.onclick = () => toggleLock(student.id, ti);
+        } else {
+          pill.title = `Click to lock into ${teamName(ti)}`;
+          pill.onclick = () => toggleLock(student.id, ti);
+        }
+        column.appendChild(pill);
+      });
+      colsEl.appendChild(column);
+    });
+  }
+}
+
+function renderSummary(s) {
+  const filtered = getFilteredSolutions(s);
+  const total = s.solveResult.solutions.length, remain = filtered.length;
+  document.getElementById('m-total').textContent = total + (s.solveResult.capped ? '+' : '');
+  document.getElementById('m-remain').textContent = remain;
+  document.getElementById('m-bar').style.width = total ? Math.round(remain / total * 100) + '%' : '0%';
+  document.getElementById('counter').textContent = `${remain} of ${total}${s.solveResult.capped ? '+' : ''} arrangements possible`;
+  document.getElementById('csv-info').textContent = `${s.students.length} students loaded`;
+}
+
+function renderWarn(s) {
+  const banner = document.getElementById('warn-banner');
+  if (s.solveResult.errors.length) {
+    banner.style.display = 'block';
+    document.getElementById('warn-text').textContent = s.solveResult.errors[0];
+  } else if (!s.solveResult.solutions.length) {
+    banner.style.display = 'block';
+    document.getElementById('warn-text').textContent = 'No arrangement satisfies the active constraints for this team setup. Try a different team size/count or relax a constraint.';
+  } else if (!boardIsFeasible(s)) {
+    banner.style.display = 'block';
+    document.getElementById('warn-text').textContent = 'No valid arrangements are possible with this combination of locks. Unlock a student to restore options.';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+/* ======================================================================
+   PUBLIC SURFACE
+   Inline onclick="" handlers in the HTML above resolve against this.
+   Also doubles as the app's testable API (see functional_test.js).
+   ====================================================================== */
+Object.assign(window, {
+  Store, parseCSV, TEMPLATE_CSV, getUnis, getFilteredSolutions, getTeamMembers, isFeasibleHere, boardIsFeasible, starLevel,
+  evenSplit, validateConfig, generateSolutions, existsValidCompletion, propagateForcedMoves, uniPillStates, genderBadge,
+  handleCSV, updateNumTeams, updateTeamSizeAt, distributeEvenly, toggleConstraint, backToUpload, backToConfig,
+  runSolve, toggleLock, resetAssignments, downloadTemplate, clearData,
+});
+
+/* ======================================================================
+   WIRING
+   ====================================================================== */
+Store.subscribe(() => { render(); saveToStorage(); });
+
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); handleCSV(e.dataTransfer.files[0]); });
+document.getElementById('csv-input').onchange = e => handleCSV(e.target.files[0]);
+document.getElementById('csv-reload').onchange = e => handleCSV(e.target.files[0]);
+
+if (!loadFromStorage()) render();
+else render();
+</script>
+</body>
+</html>
