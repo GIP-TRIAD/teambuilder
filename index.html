@@ -91,6 +91,7 @@ body{font-family:var(--font);font-size:14px;color:var(--text);background:var(--b
 .slots-hint{font-size:11px;color:var(--text-tertiary);margin-top:4px}
 .team-size-row{display:flex;align-items:center;gap:8px;padding:4px 0}
 .team-size-row .tsr-name{flex:1;font-size:13px}
+.team-size-row .tsr-name-input{flex:1;font-size:13px;padding:6px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:var(--font)}
 .team-size-row input[type=number]{width:70px;font-size:14px;padding:6px 8px;border:0.5px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:var(--font)}
 .section-title{font-size:11px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin:1.1rem 0 8px}
 .constraint-row{display:flex;align-items:flex-start;gap:8px;padding:7px 0;font-size:13px}
@@ -103,10 +104,9 @@ body{font-family:var(--font);font-size:14px;color:var(--text);background:var(--b
 /* app */
 .app-header{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:0.75rem}
 .app-title{font-size:16px;font-weight:500}
-.app-counter{font-size:13px;color:var(--text-secondary)}
 .app-header .spacer{flex:1}
 .warn-banner{background:var(--bg-warn);color:var(--text-warn);border:0.5px solid var(--border-warn);border-radius:var(--radius);padding:8px 12px;font-size:13px;margin-bottom:0.75rem;display:none}
-.main{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:14px;align-items:start}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start}
 @media(max-width:640px){.main{grid-template-columns:1fr}}
 
 /* team cards */
@@ -115,6 +115,9 @@ body{font-family:var(--font);font-size:14px;color:var(--text);background:var(--b
 .team-card.dead{border-color:var(--border-danger);border-width:1px}
 .team-header{display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap}
 .team-name{font-weight:500;font-size:14px}
+.team-name-input{font-weight:500;font-size:14px;border:0.5px solid transparent;background:transparent;color:var(--text);font-family:var(--font);padding:2px 4px;border-radius:var(--radius);min-width:80px;max-width:160px}
+.team-name-input:hover{border-color:var(--border)}
+.team-name-input:focus{border-color:var(--border-md);background:var(--bg);outline:none}
 .team-count{font-size:11px;color:var(--text-tertiary);flex:1}
 .badge{font-size:11px;padding:2px 7px;border-radius:var(--radius)}
 .badge-ok{background:var(--bg-success);color:var(--text-success)}
@@ -141,14 +144,6 @@ body{font-family:var(--font);font-size:14px;color:var(--text);background:var(--b
 .legend{font-size:11px;color:var(--text-secondary);display:flex;flex-direction:column;gap:4px;margin-top:6px}
 .legend > div{display:flex;align-items:center;gap:6px}
 
-/* metrics */
-.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
-.metric{background:var(--bg-secondary);border-radius:var(--radius);padding:8px 10px}
-.metric-val{font-size:20px;font-weight:500}
-.metric-label{font-size:11px;color:var(--text-secondary);margin-top:2px}
-.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:4px}
-.progress-fill{height:100%;background:#1d9e75;border-radius:2px;transition:width 0.3s}
-
 /* buttons */
 .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 button{cursor:pointer;font-family:var(--font)}
@@ -163,6 +158,25 @@ button:disabled{cursor:not-allowed;opacity:0.5}
 /* csv footer */
 .csv-footer{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .csv-info{font-size:11px;color:var(--text-tertiary);flex:1}
+
+/* pairings */
+.pairing-form{display:flex;flex-direction:column;gap:6px;background:var(--bg-secondary);border-radius:var(--radius);padding:8px;margin-bottom:8px}
+.pairing-form .field{width:100%}
+.pairing-form select{width:100%;font-size:12px;padding:6px 7px;border:0.5px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:var(--font)}
+.pairing-form label{display:block;font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:3px}
+.pairing-list{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+.pairing-row{display:flex;align-items:flex-start;gap:8px;font-size:12px;padding:6px 9px;border-radius:var(--radius);background:var(--bg-secondary);border:0.5px solid var(--border)}
+.pairing-row .pr-label{flex:1;min-width:0;white-space:normal;overflow-wrap:anywhere;line-height:1.4;padding-top:1px}
+.pairing-row .pr-tag{flex-shrink:0;white-space:nowrap;font-size:10px;padding:1px 6px;border-radius:999px;background:var(--bg-tertiary);color:var(--text-secondary)}
+.pairing-row.pref-row{cursor:grab;background:var(--bg)}
+.pairing-row.pref-row.drag-over{border-color:var(--border-info);background:var(--bg-info)}
+.pairing-row .pr-grip{flex-shrink:0;color:var(--text-tertiary);font-size:12px;cursor:grab}
+.pairing-row .pr-remove{flex-shrink:0;background:none;border:none;color:var(--text-tertiary);font-size:14px;line-height:1;padding:0 2px}
+.pairing-row .pr-remove:hover{color:var(--text-danger)}
+.pairing-row .pr-rank{flex-shrink:0;white-space:nowrap;font-size:10px;color:var(--text-tertiary);min-width:14px}
+.pairing-row .badge{flex-shrink:0;white-space:nowrap}
+.pairing-empty{font-size:12px;color:var(--text-tertiary);padding:4px 0}
+.pref-hint{font-size:11px;color:var(--text-tertiary);margin:2px 0 8px;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -229,7 +243,11 @@ Cristina,Naples,F</pre>
         <div class="section-title">Constraints</div>
         <div id="config-constraints"></div>
 
+        <div class="section-title">Pairing rules</div>
+        <div class="pref-hint" id="config-pairing-summary"></div>
+
         <div class="err-box" id="config-err" style="display:none"></div>
+        <div class="err-box" id="config-pairing-err" style="display:none"></div>
 
         <div class="config-actions">
           <button class="btn btn-primary" id="cfg-build-btn" onclick="runSolve()">Build teams</button>
@@ -243,7 +261,6 @@ Cristina,Naples,F</pre>
   <div id="app-screen" style="display:none">
     <div class="app-header">
       <span class="app-title">Team builder</span>
-      <span class="app-counter" id="counter"></span>
       <span class="spacer"></span>
       <button class="btn" onclick="backToConfig()">Edit setup</button>
     </div>
@@ -255,26 +272,48 @@ Cristina,Naples,F</pre>
       <div class="teams-col" id="teams-col"></div>
       <div class="side-col">
         <div class="panel">
-          <div class="panel-title">Valid arrangements</div>
-          <div class="metrics">
-            <div class="metric">
-              <div class="metric-val" id="m-total">—</div>
-              <div class="metric-label">total valid</div>
-            </div>
-            <div class="metric">
-              <div class="metric-val" id="m-remain">—</div>
-              <div class="metric-label">still possible</div>
-              <div class="progress-bar"><div class="progress-fill" id="m-bar" style="width:100%"></div></div>
-            </div>
-          </div>
+          <div class="panel-title">Legend</div>
           <div class="legend">
             <div><span class="pill-star star-1" style="position:static">★</span> best remaining arrangement</div>
             <div><span class="pill-star star-2" style="position:static">★</span> 2nd best remaining arrangement</div>
             <div>Click a name to lock them into that team; click again to unlock.</div>
           </div>
           <div class="actions">
+            <button class="btn" id="undo-btn" onclick="undoLastAction()">Undo</button>
             <button class="btn" onclick="resetAssignments()">Reset all</button>
           </div>
+        </div>
+        <div class="panel" id="pairing-panel">
+          <div class="panel-title">Pairing rules</div>
+          <div class="pairing-form">
+            <div class="field">
+              <label for="pf-a">Student A</label>
+              <select id="pf-a"></select>
+            </div>
+            <div class="field">
+              <label for="pf-b">Student B</label>
+              <select id="pf-b"></select>
+            </div>
+            <div class="field">
+              <label for="pf-type">Relationship</label>
+              <select id="pf-type">
+                <option value="same">Same team</option>
+                <option value="different">Different team</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="pf-strength">Strength</label>
+              <select id="pf-strength">
+                <option value="preferable">Preferable</option>
+                <option value="hard">Hard requirement</option>
+              </select>
+            </div>
+            <button class="btn" id="pf-add-btn" onclick="addPairingFromForm()" style="width:100%">Add rule</button>
+          </div>
+          <div id="app-hard-pairings"></div>
+          <div id="app-preferences" class="pairing-list"></div>
+          <div class="pref-hint">Preferences are ranked — drag to reorder. Higher up means higher priority, but enough lower-priority preferences together can still outweigh one ranked above them.</div>
+          <div class="err-box" id="app-pairing-err" style="display:none"></div>
         </div>
         <div class="panel">
           <div class="csv-footer">
@@ -305,9 +344,17 @@ const Store = (() => {
     students: [],                // [{id,name,uni,gender}]
     numTeams: 2,
     teamSizes: [7, 7],           // one entry per team; teams need not be equal size
+    teamNames: ['', ''],         // one entry per team; '' means "use the default pool name" (see defaultTeamName/teamName)
     constraintToggles: { uniCoverage: true, genderBalance: true },
+    pairings: [],                 // [{id, studentA, studentB, type:'same'|'different', strength:'hard'|'preferable'}]
+    preferenceOrder: ['genderBalance'], // ranked ids (genderBalance + preferable pairing ids); top = highest priority
     solveResult: { solutions: [], capped: false, errors: [], nodesExplored: 0 },
     assignments: {},             // studentId -> teamIndex, only present once locked
+    // Linear undo stack of previous `assignments` snapshots, most-recent last.
+    // Pushed to by every action that changes assignments (toggleLock,
+    // resetAssignments, refreshPairingsOnBoard); cleared on runSolve since
+    // that starts a genuinely new board. Capped — see pushAssignmentHistory.
+    assignmentHistory: [],
   };
   const listeners = [];
   return {
@@ -375,6 +422,156 @@ function totalSoftScore(solution, softConstraints) {
 }
 
 /* ======================================================================
+   PAIRING RULES
+   A pairing is { id, studentA, studentB, type: 'same'|'different', strength: 'hard'|'preferable' }.
+   Unlike HARD_CONSTRAINTS/SOFT_CONSTRAINTS above (which only ever look at
+   one team's members), a pairing inherently spans two students who may be
+   in two different teams — so it can't be expressed as check(team, ctx).
+   Hard pairings are enforced inside the solvers' backtracking (see
+   hardPairingsOk, used by both generateSolutions and existsValidCompletion)
+   against a `located` map of studentId -> teamIndex maintained alongside
+   the team arrays. Preferable pairings feed into buildPreferenceScorer
+   instead of the old per-team totalSoftScore, because they need to see
+   the whole solution (both teams) to know if they're satisfied, and they
+   share one ranked-priority list with genderBalance (state.preferenceOrder)
+   per explicit user decision: priority is a WEIGHTED ranking (top of the
+   list gets the most weight), not a strict lexicographic override — enough
+   lower-priority preferences can still collectively outweigh a single
+   higher-ranked one. Weight is simply "position from the bottom" of the
+   active list; this is the simplest scheme that satisfies that property
+   without pretending to be more principled than it is.
+   ====================================================================== */
+function involvesStudent(p, studentId) { return p.studentA === studentId || p.studentB === studentId; }
+function otherStudent(p, studentId) { return p.studentA === studentId ? p.studentB : p.studentA; }
+function samePairUnordered(a, b) {
+  return (a.studentA === b.studentA && a.studentB === b.studentB) ||
+         (a.studentA === b.studentB && a.studentB === b.studentA);
+}
+function hardPairingsList(pairings) { return pairings.filter(p => p.strength === 'hard'); }
+function preferablePairingsList(pairings) { return pairings.filter(p => p.strength === 'preferable'); }
+
+// Checked inside backtracking right after `studentId` is placed into team `ti`.
+// `located` holds every currently-placed student's team index (this call site's
+// student included). Only pairings whose *other* member is already placed can
+// possibly be violated yet — whichever student of a pair is placed second is
+// the one whose placement naturally validates the pair, symmetric either way.
+function hardPairingsOk(studentId, ti, located, hardPairings) {
+  for (const p of hardPairings) {
+    if (!involvesStudent(p, studentId)) continue;
+    const partnerTi = located[otherStudent(p, studentId)];
+    if (partnerTi === undefined) continue;
+    const same = partnerTi === ti;
+    if (p.type === 'same' && !same) return false;
+    if (p.type === 'different' && same) return false;
+  }
+  return true;
+}
+
+// Pre-solve check for pairing rules that can never be satisfied regardless of
+// team setup: a direct contradiction (both a hard "same" and a hard
+// "different" rule on the exact same pair) or a transitive one (a chain of
+// hard "same" rules links A and B, but a hard "different" rule also exists
+// between them). This is checked independent of team sizes/capacity — those
+// can still separately make a config infeasible, which is reported by the
+// solver returning no solutions rather than blocked up front here.
+function validatePairings(students, pairings) {
+  const errors = [];
+  const ids = new Set(students.map(s => s.id));
+  const nameOf = id => (students.find(s => s.id === id) || {}).name || '(removed student)';
+  const dangling = pairings.some(p => !ids.has(p.studentA) || !ids.has(p.studentB));
+  if (dangling) errors.push('A pairing rule references a student that no longer exists. Remove and re-add it.');
+
+  const hard = hardPairingsList(pairings).filter(p => ids.has(p.studentA) && ids.has(p.studentB));
+  const directlyFlagged = new Set();
+  for (let i = 0; i < hard.length; i++) {
+    for (let j = i + 1; j < hard.length; j++) {
+      if (samePairUnordered(hard[i], hard[j]) && hard[i].type !== hard[j].type) {
+        errors.push(`"${nameOf(hard[i].studentA)}" and "${nameOf(hard[i].studentB)}" have contradictory hard rules — same team AND different team.`);
+        directlyFlagged.add([hard[i].studentA, hard[i].studentB].sort().join('|'));
+      }
+    }
+  }
+
+  const parent = {};
+  const find = x => { if (parent[x] === undefined) parent[x] = x; return parent[x] === x ? x : (parent[x] = find(parent[x])); };
+  const union = (x, y) => { const rx = find(x), ry = find(y); if (rx !== ry) parent[rx] = ry; };
+  hard.filter(p => p.type === 'same').forEach(p => union(p.studentA, p.studentB));
+  hard.filter(p => p.type === 'different').forEach(p => {
+    if (directlyFlagged.has([p.studentA, p.studentB].sort().join('|'))) return; // already explained as a direct contradiction
+    if (parent[p.studentA] !== undefined && parent[p.studentB] !== undefined && find(p.studentA) === find(p.studentB)) {
+      errors.push(`"${nameOf(p.studentA)}" and "${nameOf(p.studentB)}" are linked into the same team by other hard "same team" rules, but also have a hard "different team" rule between them — this can never be satisfied.`);
+    }
+  });
+
+  return { ok: errors.length === 0, errors: [...new Set(errors)] };
+}
+
+function pairingLabel(students, p) {
+  const nameOf = id => (students.find(s => s.id === id) || {}).name || '?';
+  return `${nameOf(p.studentA)} ${p.type === 'same' ? '+ together with' : '≠ apart from'} ${nameOf(p.studentB)}`;
+}
+
+// The ordered, *active* items that make up the weighted-priority ranking:
+// genderBalance (if toggled on) plus every preferable pairing that still
+// references two real students. Order follows state.preferenceOrder;
+// anything in that array whose backing item no longer exists/qualifies is
+// silently skipped rather than erroring, since removal already prunes it.
+function visiblePreferenceEntries(state) {
+  const ids = new Set(state.students.map(s => s.id));
+  return state.preferenceOrder
+    .map(id => {
+      if (id === 'genderBalance') {
+        return state.constraintToggles.genderBalance !== false
+          ? { id, kind: 'gender', label: 'Balance gender within each team' } : null;
+      }
+      const p = state.pairings.find(pp => pp.id === id && pp.strength === 'preferable');
+      if (!p || !ids.has(p.studentA) || !ids.has(p.studentB)) return null;
+      return { id, kind: 'pairing', label: pairingLabel(state.students, p), pairing: p };
+    })
+    .filter(Boolean);
+}
+
+// Builds a single scoreSolution(teams) -> number function (0 = ideal, lower
+// is better) combining genderBalance and every preferable pairing, weighted
+// by rank in state.preferenceOrder — top of the list gets the largest
+// weight, but it's a plain weighted sum (not exponential/lexicographic), so
+// several lower-priority items can outweigh one higher-priority item. This
+// replaces the old totalSoftScore for ranking generateSolutions' output.
+function buildPreferenceScorer(state) {
+  const entries = visiblePreferenceEntries(state);
+  const n = entries.length;
+  const genderScorer = SOFT_CONSTRAINTS.find(c => c.id === 'genderBalance');
+  return function scoreSolution(teams) {
+    let total = 0;
+    entries.forEach((entry, idx) => {
+      const weight = n - idx; // top of the ranked list = highest weight
+      if (entry.kind === 'gender') {
+        for (const team of teams) total += weight * genderScorer.score(team);
+      } else {
+        const teamOf = studentId => teams.findIndex(t => t.some(s => s.id === studentId));
+        const ta = teamOf(entry.pairing.studentA), tb = teamOf(entry.pairing.studentB);
+        const satisfied = entry.pairing.type === 'same' ? (ta === tb) : (ta !== tb);
+        total += weight * (satisfied ? 0 : 1);
+      }
+    });
+    return total;
+  };
+}
+
+// Live status of one pairing rule against the current locks, for the app
+// screen's side panel — 'ok' (satisfied), 'bad' (violated; only reachable
+// for preferable rules, since hard ones are enforced by the solver itself
+// and can never end up violated in a reachable board state), or 'neutral'
+// (at least one side isn't locked yet, so it's still undetermined).
+function pairingStatus(state, p) {
+  const ta = state.assignments[p.studentA], tb = state.assignments[p.studentB];
+  if (ta === undefined || tb === undefined) return 'neutral';
+  const same = ta === tb;
+  const satisfied = p.type === 'same' ? same : !same;
+  return satisfied ? 'ok' : 'bad';
+}
+
+/* ======================================================================
    VALIDATION — checked explicitly before ever running the solver, so a
    bad configuration produces a readable message instead of a silent
    empty result.
@@ -438,7 +635,7 @@ function validateConfig(students, numTeams, teamSizes) {
    after every single addition (not just once a team fills up) so whole
    branches get cut the moment they're provably dead.
    ====================================================================== */
-function generateSolutions(students, numTeams, teamSizes, hardConstraints, softConstraints, opts = {}) {
+function generateSolutions(students, numTeams, teamSizes, hardConstraints, hardPairings, scoreSolution, opts = {}) {
   const { maxSolutions = 500, maxNodes = 2_000_000 } = opts;
   const validation = validateConfig(students, numTeams, teamSizes);
   if (!validation.ok) return { solutions: [], capped: false, errors: validation.errors, nodesExplored: 0 };
@@ -451,6 +648,7 @@ function generateSolutions(students, numTeams, teamSizes, hardConstraints, softC
   });
 
   const teams = Array.from({ length: numTeams }, () => []);
+  const located = {};
   const solutions = [];
   let nodes = 0;
   let capped = false;
@@ -467,15 +665,18 @@ function generateSolutions(students, numTeams, teamSizes, hardConstraints, softC
     for (let ti = 0; ti < numTeams; ti++) {
       if (teams[ti].length >= teamSizes[ti]) continue;
       teams[ti].push(student);
+      located[student.id] = ti;
       const isComplete = teams[ti].length === teamSizes[ti];
-      const ok = hardConstraints.every(c => c.check(teams[ti], { allUnis, isComplete, capacity: teamSizes[ti] }));
+      const ok = hardConstraints.every(c => c.check(teams[ti], { allUnis, isComplete, capacity: teamSizes[ti] }))
+        && hardPairingsOk(student.id, ti, located, hardPairings);
       if (ok) backtrack(i + 1);
       teams[ti].pop();
+      delete located[student.id];
       if (capped) return;
     }
   }
   backtrack(0);
-  solutions.sort((a, b) => totalSoftScore(a, softConstraints) - totalSoftScore(b, softConstraints));
+  solutions.sort((a, b) => scoreSolution(a) - scoreSolution(b));
   return { solutions, capped, errors: [], nodesExplored: nodes };
 }
 
@@ -496,19 +697,31 @@ function generateSolutions(students, numTeams, teamSizes, hardConstraints, softC
    in a pathological config is far preferable to ever blocking a click
    that was genuinely valid.
    ====================================================================== */
-function existsValidCompletion(students, numTeams, teamSizes, hardConstraints, assignments, opts = {}) {
+function existsValidCompletion(students, numTeams, teamSizes, hardConstraints, hardPairings, assignments, opts = {}) {
   const { maxNodes = 300_000 } = opts;
   const validation = validateConfig(students, numTeams, teamSizes);
   if (!validation.ok) return false;
   const allUnis = validation.unis;
 
   const teams = Array.from({ length: numTeams }, () => []);
+  const located = {};
   for (const st of students) {
     const ti = assignments[st.id];
     if (ti !== undefined) {
       if (teams[ti].length >= teamSizes[ti]) return false; // overcommitted
       teams[ti].push(st);
+      located[st.id] = ti;
     }
+  }
+  // Two already-locked students can themselves violate a hard pairing rule
+  // between them (e.g. both locked into the same team despite a "different
+  // team" rule) — check that up front, same spirit as the "already-full
+  // team must already satisfy hard constraints" check below.
+  for (const p of hardPairings) {
+    const ta = located[p.studentA], tb = located[p.studentB];
+    if (ta === undefined || tb === undefined) continue;
+    const same = ta === tb;
+    if ((p.type === 'same' && !same) || (p.type === 'different' && same)) return false;
   }
   // A team that's already full purely from locks must already satisfy hard constraints.
   for (let ti = 0; ti < numTeams; ti++) {
@@ -536,10 +749,13 @@ function existsValidCompletion(students, numTeams, teamSizes, hardConstraints, a
     for (let ti = 0; ti < numTeams && !found; ti++) {
       if (teams[ti].length >= teamSizes[ti]) continue;
       teams[ti].push(student);
+      located[student.id] = ti;
       const isComplete = teams[ti].length === teamSizes[ti];
-      const ok = hardConstraints.every(c => c.check(teams[ti], { allUnis, isComplete, capacity: teamSizes[ti] }));
+      const ok = hardConstraints.every(c => c.check(teams[ti], { allUnis, isComplete, capacity: teamSizes[ti] }))
+        && hardPairingsOk(student.id, ti, located, hardPairings);
       if (ok) backtrack(i + 1);
       teams[ti].pop();
+      delete located[student.id];
     }
   }
   backtrack(0);
@@ -560,6 +776,7 @@ function existsValidCompletion(students, numTeams, teamSizes, hardConstraints, a
    ====================================================================== */
 function propagateForcedMoves(state) {
   const hard = activeHardConstraints(state.constraintToggles);
+  const hardPairings = hardPairingsList(state.pairings);
   let assignments = { ...state.assignments };
   let changed = true;
   while (changed) {
@@ -569,7 +786,7 @@ function propagateForcedMoves(state) {
       let feasibleCount = 0, feasibleTeam = -1;
       for (let ti = 0; ti < state.numTeams; ti++) {
         const test = { ...assignments, [student.id]: ti };
-        if (existsValidCompletion(state.students, state.numTeams, state.teamSizes, hard, test)) {
+        if (existsValidCompletion(state.students, state.numTeams, state.teamSizes, hard, hardPairings, test)) {
           feasibleCount++;
           feasibleTeam = ti;
           if (feasibleCount > 1) break; // not forced — no need to keep checking
@@ -655,14 +872,14 @@ function downloadTemplate() {
 /* ======================================================================
    PERSISTENCE
    ====================================================================== */
-const STORAGE_KEY = 'teambuilder-v4'; // bumped: schema changed from placements grid to assignments map
+const STORAGE_KEY = 'teambuilder-v6'; // bumped: added teamNames
 function saveToStorage() {
   const s = Store.getState();
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      students: s.students, numTeams: s.numTeams, teamSizes: s.teamSizes,
+      students: s.students, numTeams: s.numTeams, teamSizes: s.teamSizes, teamNames: s.teamNames,
       constraintToggles: s.constraintToggles, screen: s.screen === 'app' ? 'app' : 'config',
-      assignments: s.assignments,
+      assignments: s.assignments, pairings: s.pairings, preferenceOrder: s.preferenceOrder,
     }));
   } catch (e) {}
 }
@@ -674,7 +891,9 @@ function loadFromStorage() {
     if (!saved || !saved.students || !saved.students.length) return false;
     Store.setState({
       students: saved.students, numTeams: saved.numTeams, teamSizes: saved.teamSizes,
+      teamNames: resizeTeamNames(saved.teamNames, saved.numTeams),
       constraintToggles: saved.constraintToggles || { uniCoverage: true, genderBalance: true },
+      pairings: saved.pairings || [], preferenceOrder: saved.preferenceOrder || ['genderBalance'],
       screen: 'config',
     });
     if (saved.screen === 'app') {
@@ -688,7 +907,7 @@ function clearData() {
   try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
   Store.setState({
     screen: 'upload', students: [], solveResult: { solutions: [], capped: false, errors: [], nodesExplored: 0 },
-    assignments: {},
+    assignments: {}, pairings: [], preferenceOrder: ['genderBalance'], teamNames: [], assignmentHistory: [],
   });
 }
 
@@ -716,13 +935,69 @@ function getTeamMembers(state, ti) {
 // function for why the sample alone isn't reliable enough for this.
 function isFeasibleHere(state, studentId, ti) {
   const hard = activeHardConstraints(state.constraintToggles);
+  const hardPairings = hardPairingsList(state.pairings);
   const testAssignments = { ...state.assignments, [studentId]: ti };
-  return existsValidCompletion(state.students, state.numTeams, state.teamSizes, hard, testAssignments);
+  return existsValidCompletion(state.students, state.numTeams, state.teamSizes, hard, hardPairings, testAssignments);
 }
 // Is the current set of locks (with no further changes) still completable at all?
 function boardIsFeasible(state) {
   const hard = activeHardConstraints(state.constraintToggles);
-  return existsValidCompletion(state.students, state.numTeams, state.teamSizes, hard, state.assignments);
+  const hardPairings = hardPairingsList(state.pairings);
+  return existsValidCompletion(state.students, state.numTeams, state.teamSizes, hard, hardPairings, state.assignments);
+}
+// Explains *why* a given assignments map is infeasible — called only once the
+// caller has already confirmed existsValidCompletion is false for it (never
+// called speculatively; that would double the cost for no benefit). Works by
+// re-running existsValidCompletion with hard constraints and hard pairings
+// selectively switched off, isolating which one(s) are responsible — no new
+// solver logic, just recombining the same parameterized existsValidCompletion
+// that already exists for a different purpose. Kept OFF the main render path
+// deliberately (see the two call sites below) because each extra call costs
+// as much as a full feasibility check (up to ~23ms per the perf notes above);
+// called lazily on hover for pills, and once for the board-dead banner.
+function diagnoseInfeasibility(state, testAssignments) {
+  const allHard = activeHardConstraints(state.constraintToggles);
+  const allPairings = hardPairingsList(state.pairings);
+
+  // Neither hard constraints nor pairings active at all — if it's still
+  // infeasible here, it's pure capacity: not enough team slots left for
+  // everyone who still needs placing (locking this student overcommits a
+  // team, or the remaining unlocked students can't fit in what's left).
+  const withoutBoth = existsValidCompletion(state.students, state.numTeams, state.teamSizes, [], [], testAssignments);
+  if (!withoutBoth) {
+    return ['There isn\u2019t enough room left in the teams for everyone still to be placed.'];
+  }
+
+  const withoutPairings = existsValidCompletion(state.students, state.numTeams, state.teamSizes, allHard, [], testAssignments);
+  const withoutHardConstraints = existsValidCompletion(state.students, state.numTeams, state.teamSizes, [], allPairings, testAssignments);
+  const uniIsCause = !withoutPairings;        // fails even with pairings turned off → hard constraints (uni coverage) contribute
+  const pairingIsCause = !withoutHardConstraints; // fails even with hard constraints turned off → pairings contribute
+
+  if (uniIsCause && !pairingIsCause) {
+    return ['This would break the university-coverage requirement for a team.'];
+  }
+  if (pairingIsCause && !uniIsCause) {
+    // Narrow down to the specific pairing(s) responsible: drop each hard
+    // pairing one at a time and see if that alone restores feasibility.
+    // Cheap in practice — pairing counts are small (the app assumes at most
+    // a handful of rules; see PROJECT_NOTES).
+    const culprits = allPairings.filter(p => {
+      const rest = allPairings.filter(x => x.id !== p.id);
+      const feasibleWithoutP = existsValidCompletion(state.students, state.numTeams, state.teamSizes, [], rest, testAssignments);
+      return feasibleWithoutP; // removing p alone restores feasibility → p was (at least partly) responsible
+    });
+    return culprits.length
+      ? [`Conflicts with the hard pairing rule: ${culprits.map(p => pairingLabel(state.students, p)).join('; ')}.`]
+      : ['Conflicts with a hard pairing rule.'];
+  }
+  if (uniIsCause && pairingIsCause) {
+    return ['Conflicts with both the university-coverage requirement and a hard pairing rule.'];
+  }
+  // Neither rule type alone reproduces the failure, yet the full combination
+  // does — an interaction between multiple constraints/locks together, no
+  // single one solely responsible. Less satisfying than a specific pointer,
+  // but still more honest than a generic "no valid arrangement."
+  return ['No single rule is solely responsible \u2014 it\u2019s the combination of locks, university coverage, and pairing rules together that leaves no valid arrangement.'];
 }
 // 1 = part of the #1 ranked remaining arrangement, 2 = part of the #2 ranked one (only
 // shown if there's more than one arrangement left), 0 = part of neither. This is
@@ -741,12 +1016,17 @@ function genderBadge(members) {
 // One entry per university: 'ok' once that university has a member on this team,
 // 'bad' once the team no longer has enough empty slots left to cover every still-missing
 // university (so this one's coverage is provably dead too), 'neutral' while still achievable.
+// `count` is how many members of that university are currently on this team (0 while neutral/bad).
 function uniPillStates(members, unis, capacity) {
   const present = new Set(members.map(x => x.uni));
   const missing = unis.filter(u => !present.has(u));
   const remainingSlots = capacity - members.length;
   const overallDead = remainingSlots < missing.length;
-  return unis.map(u => ({ uni: u, state: present.has(u) ? 'ok' : (overallDead ? 'bad' : 'neutral') }));
+  return unis.map(u => ({
+    uni: u,
+    state: present.has(u) ? 'ok' : (overallDead ? 'bad' : 'neutral'),
+    count: members.filter(m => m.uni === u).length,
+  }));
 }
 const UNI_COLORS = [
   { bg: '#e6f1fb', fg: '#185fa5' }, { bg: '#eeedfe', fg: '#534ab7' },
@@ -758,7 +1038,25 @@ function uniColor(uni, unis) {
   return UNI_COLORS[idx];
 }
 const TEAM_NAMES_POOL = ['Team Alpha', 'Team Beta', 'Team Gamma', 'Team Delta', 'Team Epsilon', 'Team Zeta'];
-function teamName(i) { return TEAM_NAMES_POOL[i] || `Team ${i + 1}`; }
+function defaultTeamName(i) { return TEAM_NAMES_POOL[i] || `Team ${i + 1}`; }
+// Teams can be renamed by the teacher; state.teamNames is a sparse-by-convention
+// array (same length as teamSizes) where an empty/missing entry falls back to
+// defaultTeamName(i). Every call site that used to call the old index-only
+// teamName(i) now goes through this instead, passing state so a custom name
+// (if set) wins.
+function teamName(state, i) {
+  const custom = state.teamNames && state.teamNames[i];
+  return (custom && custom.trim()) ? custom : defaultTeamName(i);
+}
+// Resizes a teamNames array to `numTeams` entries, preserving custom names at
+// indices that still exist and padding new ones with ''. Used whenever
+// numTeams changes so a rename made before resizing isn't silently lost for
+// teams that survive the resize.
+function resizeTeamNames(teamNames, numTeams) {
+  const arr = (teamNames || []).slice(0, numTeams);
+  while (arr.length < numTeams) arr.push('');
+  return arr;
+}
 
 /* ======================================================================
    ACTIONS
@@ -775,9 +1073,10 @@ function handleCSV(file) {
     const numTeams = unis.length || 1;
     Store.setState({
       screen: 'config', students: result.students, numTeams, teamSizes: evenSplit(result.students.length, numTeams),
+      teamNames: resizeTeamNames([], numTeams),
       constraintToggles: { uniCoverage: true, genderBalance: true },
       solveResult: { solutions: [], capped: false, errors: [], nodesExplored: 0 },
-      assignments: {},
+      assignments: {}, pairings: [], preferenceOrder: ['genderBalance'], assignmentHistory: [],
     });
     saveToStorage();
   };
@@ -786,7 +1085,11 @@ function handleCSV(file) {
 function updateNumTeams(v) {
   const s = Store.getState();
   const numTeams = parseInt(v, 10) || 0;
-  Store.setState({ numTeams, teamSizes: evenSplit(s.students.length, Math.max(numTeams, 0)) });
+  Store.setState({
+    numTeams,
+    teamSizes: evenSplit(s.students.length, Math.max(numTeams, 0)),
+    teamNames: resizeTeamNames(s.teamNames, Math.max(numTeams, 0)),
+  });
   saveToStorage();
 }
 function updateTeamSizeAt(idx, v) {
@@ -794,6 +1097,16 @@ function updateTeamSizeAt(idx, v) {
   const teamSizes = s.teamSizes.slice();
   teamSizes[idx] = parseInt(v, 10) || 0;
   Store.setState({ teamSizes });
+  saveToStorage();
+}
+// Sets a custom display name for team `idx`. An empty string clears it back
+// to the default pool name (defaultTeamName) — this is deliberately allowed
+// at any time, config screen or app screen, same as pairing rules.
+function updateTeamName(idx, name) {
+  const s = Store.getState();
+  const teamNames = resizeTeamNames(s.teamNames, s.numTeams);
+  teamNames[idx] = name;
+  Store.setState({ teamNames });
   saveToStorage();
 }
 function distributeEvenly() {
@@ -804,7 +1117,88 @@ function distributeEvenly() {
 function toggleConstraint(id) {
   const s = Store.getState();
   Store.setState({ constraintToggles: { ...s.constraintToggles, [id]: !s.constraintToggles[id] } });
+  if (id === 'genderBalance') refreshPairingsOnBoard();
   saveToStorage();
+}
+function genPairingId() { return 'pr' + Math.random().toString(36).slice(2, 9); }
+// Reads the add-pairing form fields directly (simplest wiring for a form
+// that's just four selects + a button, consistent with this app's style of
+// inline DOM reads in action functions rather than a separate form-state slice).
+function addPairingFromForm() {
+  const a = document.getElementById('pf-a').value;
+  const b = document.getElementById('pf-b').value;
+  const type = document.getElementById('pf-type').value;
+  const strength = document.getElementById('pf-strength').value;
+  addPairing(a, b, type, strength);
+}
+function addPairing(studentA, studentB, type, strength) {
+  if (!studentA || !studentB || studentA === studentB) return;
+  const s = Store.getState();
+  // Refuse an exact duplicate (same unordered pair, same relationship type) —
+  // adding it again wouldn't change anything and would just clutter the list.
+  const dup = s.pairings.some(p => samePairUnordered(p, { studentA, studentB }) && p.type === type);
+  if (dup) return;
+  const id = genPairingId();
+  const pairing = { id, studentA, studentB, type, strength };
+  const pairings = [...s.pairings, pairing];
+  // New preferable rules join the ranked list at the bottom (lowest priority)
+  // by default; the user can drag them up. Hard rules have no rank.
+  const preferenceOrder = strength === 'preferable' ? [...s.preferenceOrder, id] : s.preferenceOrder;
+  Store.setState({ pairings, preferenceOrder });
+  refreshPairingsOnBoard();
+  saveToStorage();
+}
+function removePairing(id) {
+  const s = Store.getState();
+  Store.setState({
+    pairings: s.pairings.filter(p => p.id !== id),
+    preferenceOrder: s.preferenceOrder.filter(x => x !== id),
+  });
+  refreshPairingsOnBoard();
+  saveToStorage();
+}
+// Reorders state.preferenceOrder by moving the item at fromIdx to toIdx
+// (indices are positions within the *full* array, which only ever contains
+// 'genderBalance' plus preferable-pairing ids — hard pairings never appear
+// here since they have no notion of priority).
+function reorderPreference(fromIdx, toIdx) {
+  if (fromIdx === toIdx) return;
+  const s = Store.getState();
+  const order = s.preferenceOrder.slice();
+  if (fromIdx < 0 || fromIdx >= order.length || toIdx < 0 || toIdx >= order.length) return;
+  const [moved] = order.splice(fromIdx, 1);
+  order.splice(toIdx, 0, moved);
+  Store.setState({ preferenceOrder: order });
+  refreshPairingsOnBoard();
+  saveToStorage();
+}
+// Pairing rules live on the app screen and are editable at any time (not just
+// during initial setup), so every add/remove/reorder needs to take effect
+// immediately on the board that's already up. This is intentionally different
+// from runSolve(): it does NOT reset assignments to {} — existing locks are
+// kept as-is. If a newly added hard pairing now contradicts a lock, this
+// doesn't auto-unlock anything; boardIsFeasible()'s existing "no valid
+// arrangement — unlock a student" warning banner already covers that case,
+// consistent with how the app never silently discards a teacher's locks.
+// If the pairing set itself is now structurally contradictory (see
+// validatePairings), skip re-solving — it would just burn the node budget
+// proving something already known to be impossible — and surface the
+// conflict via solveResult.errors, the same banner the config-screen build
+// step uses.
+function refreshPairingsOnBoard() {
+  const s = Store.getState();
+  if (s.screen !== 'app') return; // nothing solved yet; config-screen summary/validation covers that case
+  const pairingValidation = validatePairings(s.students, s.pairings);
+  if (!pairingValidation.ok) {
+    Store.setState({ solveResult: { ...s.solveResult, errors: pairingValidation.errors } });
+    return;
+  }
+  const hard = activeHardConstraints(s.constraintToggles);
+  const hardPairings = hardPairingsList(s.pairings);
+  const scoreSolution = buildPreferenceScorer(s);
+  const result = generateSolutions(s.students, s.numTeams, s.teamSizes, hard, hardPairings, scoreSolution);
+  const assignments = propagateForcedMoves({ ...s, solveResult: result });
+  Store.setState({ solveResult: result, assignments, assignmentHistory: pushAssignmentHistory(s) });
 }
 function backToUpload() {
   Store.setState({ screen: 'upload', students: [] });
@@ -816,16 +1210,36 @@ function backToConfig() {
 function runSolve() {
   const s = Store.getState();
   const validation = validateConfig(s.students, s.numTeams, s.teamSizes);
-  if (!validation.ok) {
-    Store.setState({ solveResult: { solutions: [], capped: false, errors: validation.errors, nodesExplored: 0 } });
+  const pairingValidation = validatePairings(s.students, s.pairings);
+  const errors = [...validation.errors, ...pairingValidation.errors];
+  if (errors.length) {
+    Store.setState({ solveResult: { solutions: [], capped: false, errors, nodesExplored: 0 } });
     return;
   }
   const hard = activeHardConstraints(s.constraintToggles);
-  const soft = activeSoftConstraints(s.constraintToggles);
-  const result = generateSolutions(s.students, s.numTeams, s.teamSizes, hard, soft);
+  const hardPairings = hardPairingsList(s.pairings);
+  const scoreSolution = buildPreferenceScorer(s);
+  const result = generateSolutions(s.students, s.numTeams, s.teamSizes, hard, hardPairings, scoreSolution);
   const assignments = propagateForcedMoves({ ...s, solveResult: result, assignments: {} });
-  Store.setState({ screen: 'app', solveResult: result, assignments });
+  // Fresh board — nothing meaningful to undo back to, so the stack resets here
+  // rather than accumulating across separate "Build teams" runs.
+  Store.setState({ screen: 'app', solveResult: result, assignments, assignmentHistory: [] });
   saveToStorage();
+}
+// Snapshot the current assignments onto the undo stack before a change is
+// applied. Capped at 20 — this is meant for "undo my last few clicks," not a
+// full audit log; older history just falls off the front.
+const ASSIGNMENT_HISTORY_CAP = 20;
+function pushAssignmentHistory(state) {
+  const history = [...(state.assignmentHistory || []), state.assignments];
+  return history.length > ASSIGNMENT_HISTORY_CAP ? history.slice(history.length - ASSIGNMENT_HISTORY_CAP) : history;
+}
+function undoLastAction() {
+  const s = Store.getState();
+  if (!s.assignmentHistory || !s.assignmentHistory.length) return;
+  const history = s.assignmentHistory.slice();
+  const prev = history.pop();
+  Store.setState({ assignments: prev, assignmentHistory: history });
 }
 // Click a student's pill inside a team's column: locks them there if it's still
 // feasible, or unlocks them if they were already locked to this exact team.
@@ -845,11 +1259,17 @@ function toggleLock(studentId, ti) {
     if (!isFeasibleHere(s, studentId, ti)) return; // guard against stale clicks; UI already disables this case
     assignments = { ...s.assignments, [studentId]: ti };
   }
-  Store.setState({ assignments: propagateForcedMoves({ ...s, assignments }) });
+  Store.setState({
+    assignments: propagateForcedMoves({ ...s, assignments }),
+    assignmentHistory: pushAssignmentHistory(s),
+  });
 }
 function resetAssignments() {
   const s = Store.getState();
-  Store.setState({ assignments: propagateForcedMoves({ ...s, assignments: {} }) });
+  Store.setState({
+    assignments: propagateForcedMoves({ ...s, assignments: {} }),
+    assignmentHistory: pushAssignmentHistory(s),
+  });
 }
 
 /* ======================================================================
@@ -882,8 +1302,11 @@ function renderConfig(s) {
   s.teamSizes.forEach((sz, i) => {
     const row = document.createElement('div');
     row.className = 'team-size-row';
-    row.innerHTML = `<span class="tsr-name">${teamName(i)}</span><input type="number" min="1" id="cfg-size-${i}">`;
-    const input = row.querySelector('input');
+    row.innerHTML = `<input type="text" class="tsr-name-input" id="cfg-name-${i}" placeholder="${defaultTeamName(i)}"><input type="number" min="1" id="cfg-size-${i}">`;
+    const nameInput = row.querySelector(`#cfg-name-${i}`);
+    if (document.activeElement !== nameInput) nameInput.value = (s.teamNames && s.teamNames[i]) || '';
+    nameInput.oninput = e => updateTeamName(i, e.target.value);
+    const input = row.querySelector('input[type="number"]');
     if (document.activeElement !== input) input.value = sz;
     input.oninput = e => updateTeamSizeAt(i, e.target.value);
     sizesList.appendChild(row);
@@ -895,13 +1318,11 @@ function renderConfig(s) {
 
   const cList = document.getElementById('config-constraints');
   cList.innerHTML = '';
-  [...HARD_CONSTRAINTS, ...SOFT_CONSTRAINTS].forEach(c => {
-    const isHard = HARD_CONSTRAINTS.includes(c);
-    const checked = isHard ? true : (s.constraintToggles[c.id] !== false);
+  HARD_CONSTRAINTS.forEach(c => {
     const row = document.createElement('div');
     row.className = 'constraint-row' + (c.locked ? ' locked' : '');
     row.innerHTML = `
-      <input type="checkbox" id="c-${c.id}" ${checked ? 'checked' : ''} ${c.locked ? 'disabled' : ''}>
+      <input type="checkbox" id="c-${c.id}" checked ${c.locked ? 'disabled' : ''}>
       <label for="c-${c.id}" style="flex:1">
         <div class="c-label">${c.label}${c.locked ? ' (required)' : ''}</div>
         <div class="c-desc">${c.desc}</div>
@@ -909,6 +1330,16 @@ function renderConfig(s) {
     if (!c.locked) row.querySelector('input').onchange = () => toggleConstraint(c.id);
     cList.appendChild(row);
   });
+
+  // Pairing rules are edited on the app/team-board screen now (same page as
+  // the roster), not here — this is a read-only summary so a teacher coming
+  // back to "Edit setup" from the app screen can still see what's set.
+  const hardCount = hardPairingsList(s.pairings).length;
+  const prefCount = preferablePairingsList(s.pairings).length;
+  const summaryEl = document.getElementById('config-pairing-summary');
+  summaryEl.textContent = (hardCount || prefCount)
+    ? `${hardCount} hard rule${hardCount === 1 ? '' : 's'}, ${prefCount} preferable rule${prefCount === 1 ? '' : 's'} currently set. Add, remove, or reorder them from the team board after building teams.`
+    : 'None set yet. You can add pairing rules from the team board after building teams.';
 
   const validation = validateConfig(s.students, s.numTeams, s.teamSizes);
   const errEl = document.getElementById('config-err');
@@ -918,13 +1349,125 @@ function renderConfig(s) {
   } else {
     errEl.style.display = 'none';
   }
-  document.getElementById('cfg-build-btn').disabled = !validation.ok;
+
+  const pairingValidation = validatePairings(s.students, s.pairings);
+  const pairErrEl = document.getElementById('config-pairing-err');
+  if (!pairingValidation.ok) {
+    pairErrEl.style.display = 'block';
+    pairErrEl.innerHTML = `<strong>Pairing rules conflict:</strong><ul>${pairingValidation.errors.map(e => `<li>${e}</li>`).join('')}</ul>`;
+  } else {
+    pairErrEl.style.display = 'none';
+  }
+
+  document.getElementById('cfg-build-btn').disabled = !validation.ok || !pairingValidation.ok;
 }
 
 function renderApp(s) {
   renderTeams(s);
-  renderSummary(s);
+  renderCsvInfo(s);
   renderWarn(s);
+  renderPairingPanel(s);
+  const undoBtn = document.getElementById('undo-btn');
+  undoBtn.disabled = !s.assignmentHistory || !s.assignmentHistory.length;
+  undoBtn.title = undoBtn.disabled ? 'Nothing to undo yet' : 'Undo the last lock/unlock or pairing-rule change';
+}
+
+// Pairings the given student is part of, formatted for a pill's title tooltip.
+function studentPairingNotes(state, studentId) {
+  return state.pairings
+    .filter(p => involvesStudent(p, studentId))
+    .map(p => {
+      const partner = (state.students.find(st => st.id === otherStudent(p, studentId)) || {}).name || '?';
+      const rel = p.type === 'same' ? 'same team as' : 'different team from';
+      return `${p.strength === 'hard' ? 'Must be' : 'Prefer'} ${rel} ${partner}`;
+    });
+}
+
+// The pairing panel lives on the app screen (same page as the team board /
+// roster) rather than the config screen, and is editable at any time — every
+// add/remove/reorder triggers refreshPairingsOnBoard() (see below), which
+// re-validates, re-solves, and re-runs forced-move propagation on top of the
+// *existing* locks (it does not clear them). This mirrors renderConfig's old
+// pairing UI almost exactly, just targeting the app-screen element ids and
+// adding a live per-rule status badge next to each row.
+function renderPairingPanel(s) {
+  const studentOptions = s.students.map(st => `<option value="${st.id}">${st.name} (${st.uni})</option>`).join('');
+  ['pf-a', 'pf-b'].forEach(elId => {
+    const sel = document.getElementById(elId);
+    const prevVal = sel.value;
+    sel.innerHTML = studentOptions;
+    if (s.students.some(st => st.id === prevVal)) sel.value = prevVal;
+  });
+
+  const statusBadge = p => {
+    const status = pairingStatus(s, p);
+    const label = status === 'ok' ? 'satisfied' : status === 'bad' ? 'not satisfied' : 'pending';
+    return `<span class="badge badge-${status}">${label}</span>`;
+  };
+
+  const hardEl = document.getElementById('app-hard-pairings');
+  const hardRules = hardPairingsList(s.pairings);
+  hardEl.innerHTML = hardRules.length
+    ? `<div class="pairing-list">${hardRules.map(p => `
+        <div class="pairing-row">
+          <span class="pr-label">${pairingLabel(s.students, p)}</span>
+          <span class="pr-tag">hard</span>
+          ${statusBadge(p)}
+          <button class="pr-remove" title="Remove rule" onclick="removePairing('${p.id}')">✕</button>
+        </div>`).join('')}</div>`
+    : '';
+
+  const prefEl = document.getElementById('app-preferences');
+  const entries = visiblePreferenceEntries(s);
+  prefEl.innerHTML = '';
+  entries.forEach((entry, idx) => {
+    const row = document.createElement('div');
+    row.className = 'pairing-row pref-row';
+    row.draggable = true;
+    row.dataset.idx = idx;
+    const removeBtn = entry.kind === 'pairing'
+      ? `<button class="pr-remove" title="Remove rule" onclick="removePairing('${entry.id}')">✕</button>`
+      : `<input type="checkbox" id="c-genderBalance" checked title="Untick to disable">`;
+    row.innerHTML = `
+      <span class="pr-rank">#${idx + 1}</span>
+      <span class="pr-grip" aria-hidden="true">⠿</span>
+      <span class="pr-label">${entry.label}</span>
+      ${entry.kind === 'pairing' ? '<span class="pr-tag">preferable</span>' + statusBadge(entry.pairing) : ''}
+      ${removeBtn}`;
+    if (entry.kind === 'gender') row.querySelector('input').onchange = () => toggleConstraint('genderBalance');
+    row.ondragstart = e => { e.dataTransfer.setData('text/plain', String(idx)); e.dataTransfer.effectAllowed = 'move'; };
+    row.ondragover = e => { e.preventDefault(); row.classList.add('drag-over'); };
+    row.ondragleave = () => row.classList.remove('drag-over');
+    row.ondrop = e => {
+      e.preventDefault();
+      row.classList.remove('drag-over');
+      const from = parseInt(e.dataTransfer.getData('text/plain'), 10);
+      reorderPreference(from, idx);
+    };
+    prefEl.appendChild(row);
+  });
+  if (s.constraintToggles.genderBalance === false) {
+    const row = document.createElement('div');
+    row.className = 'pairing-row';
+    row.innerHTML = `<input type="checkbox" id="c-genderBalance-off"><label for="c-genderBalance-off" class="pr-label">Balance gender within each team</label>`;
+    row.querySelector('input').onchange = () => toggleConstraint('genderBalance');
+    prefEl.appendChild(row);
+  }
+  if (!hardRules.length && !preferablePairingsList(s.pairings).length) {
+    const empty = document.createElement('div');
+    empty.className = 'pairing-empty';
+    empty.textContent = 'No pairing rules yet — add one above.';
+    prefEl.prepend(empty);
+  }
+
+  const pairingValidation = validatePairings(s.students, s.pairings);
+  const errEl = document.getElementById('app-pairing-err');
+  if (!pairingValidation.ok) {
+    errEl.style.display = 'block';
+    errEl.innerHTML = `<strong>Pairing rules conflict:</strong><ul>${pairingValidation.errors.map(e => `<li>${e}</li>`).join('')}</ul>`;
+  } else {
+    errEl.style.display = 'none';
+  }
 }
 
 function renderTeams(s) {
@@ -941,13 +1484,16 @@ function renderTeams(s) {
     card.className = 'team-card' + (isDead ? ' dead' : '');
     card.innerHTML = `
       <div class="team-header">
-        <span class="team-name">${teamName(ti)}</span>
+        <input type="text" class="team-name-input" id="team-name-${ti}" placeholder="${defaultTeamName(ti)}" value="${(s.teamNames && s.teamNames[ti]) ? s.teamNames[ti].replace(/"/g, '&quot;') : ''}">
         <span class="team-count">${members.length}/${s.teamSizes[ti]}</span>
-        ${uniPills.map(p => `<span class="badge badge-${p.state}">${p.uni}</span>`).join('')}
+        ${uniPills.map(p => `<span class="badge badge-${p.state}">${p.uni}${p.count > 0 ? ` · ${p.count}` : ''}</span>`).join('')}
         <span class="badge badge-${gState}">${gLabel || 'gender'}</span>
       </div>
       <div class="uni-columns" id="cols-${ti}"></div>`;
     col.appendChild(card);
+    const nameInput = document.getElementById(`team-name-${ti}`);
+    if (document.activeElement !== nameInput) nameInput.value = (s.teamNames && s.teamNames[ti]) || '';
+    nameInput.oninput = e => updateTeamName(ti, e.target.value);
     const colsEl = document.getElementById(`cols-${ti}`);
     unis.forEach(uni => {
       const { fg } = uniColor(uni, unis);
@@ -960,22 +1506,36 @@ function renderTeams(s) {
         const isElsewhere = lockedTeam !== undefined && lockedTeam !== ti;
         const feasible = lockedTeam === undefined ? isFeasibleHere(s, student.id, ti) : true;
         const star = starLevel(filtered, student.id, ti);
+        const notes = studentPairingNotes(s, student.id);
         const pill = document.createElement('div');
         pill.className = 'grid-pill' + (isHere ? ' locked' : (isElsewhere || !feasible) ? ' disabled' : '');
         pill.innerHTML =
           (star === 1 ? '<span class="pill-star star-1">★</span>' : star === 2 ? '<span class="pill-star star-2">★</span>' : '') +
-          `<span class="pill-gender">${student.gender === 'M' ? '♂' : '♀'}</span>${student.name}`;
+          `<span class="pill-gender">${student.gender === 'M' ? '♂' : '♀'}</span>${notes.length ? '🔗 ' : ''}${student.name}`;
+        let title;
         if (isElsewhere) {
-          pill.title = `Already locked to ${teamName(lockedTeam)}`;
+          title = `Already locked to ${teamName(s, lockedTeam)}`;
         } else if (!feasible) {
-          pill.title = 'Locking them here would leave no valid arrangement';
+          title = 'Locking them here would leave no valid arrangement \u2014 hover to see why';
+          // Diagnosis isn't computed here at render time on purpose — it costs
+          // roughly as much as a full feasibility check per call, and a dead
+          // board can leave many pills disabled at once (see diagnoseInfeasibility's
+          // comment). Computing it lazily on hover means the cost is only ever
+          // paid when a teacher actually asks "why," not on every re-render.
+          pill.onmouseenter = () => {
+            const liveState = Store.getState();
+            const testAssignments = { ...liveState.assignments, [student.id]: ti };
+            const reasons = diagnoseInfeasibility(liveState, testAssignments);
+            pill.title = notes.length ? `${reasons.join(' ')}\n${notes.join('\n')}` : reasons.join(' ');
+          };
         } else if (isHere) {
-          pill.title = 'Click to unlock';
+          title = 'Click to unlock';
           pill.onclick = () => toggleLock(student.id, ti);
         } else {
-          pill.title = `Click to lock into ${teamName(ti)}`;
+          title = `Click to lock into ${teamName(s, ti)}`;
           pill.onclick = () => toggleLock(student.id, ti);
         }
+        pill.title = notes.length ? `${title}\n${notes.join('\n')}` : title;
         column.appendChild(pill);
       });
       colsEl.appendChild(column);
@@ -983,13 +1543,13 @@ function renderTeams(s) {
   }
 }
 
-function renderSummary(s) {
-  const filtered = getFilteredSolutions(s);
-  const total = s.solveResult.solutions.length, remain = filtered.length;
-  document.getElementById('m-total').textContent = total + (s.solveResult.capped ? '+' : '');
-  document.getElementById('m-remain').textContent = remain;
-  document.getElementById('m-bar').style.width = total ? Math.round(remain / total * 100) + '%' : '0%';
-  document.getElementById('counter').textContent = `${remain} of ${total}${s.solveResult.capped ? '+' : ''} arrangements possible`;
+// Note: there used to be a "total valid / still possible" counter here, fed by
+// generateSolutions' sample. Removed — generateSolutions is an explicitly capped,
+// non-exhaustive, biased sample (see the two-solver-split note above), so that
+// count never reflected the true number of valid arrangements and was misleading
+// rather than useful. Star recommendations are unaffected; they only need a
+// best/2nd-best ordering within the sample, not a true count.
+function renderCsvInfo(s) {
   document.getElementById('csv-info').textContent = `${s.students.length} students loaded`;
 }
 
@@ -1003,7 +1563,12 @@ function renderWarn(s) {
     document.getElementById('warn-text').textContent = 'No arrangement satisfies the active constraints for this team setup. Try a different team size/count or relax a constraint.';
   } else if (!boardIsFeasible(s)) {
     banner.style.display = 'block';
-    document.getElementById('warn-text').textContent = 'No valid arrangements are possible with this combination of locks. Unlock a student to restore options.';
+    // diagnoseInfeasibility is only called here — once, only when the board is
+    // actually dead — not per pill during normal rendering. See its comment
+    // for why: each call costs roughly as much as a full feasibility check.
+    const reasons = diagnoseInfeasibility(s, s.assignments);
+    document.getElementById('warn-text').textContent =
+      `No valid arrangements are possible with this combination of locks. ${reasons.join(' ')} Unlock a student to restore options.`;
   } else {
     banner.style.display = 'none';
   }
@@ -1018,7 +1583,10 @@ Object.assign(window, {
   Store, parseCSV, TEMPLATE_CSV, getUnis, getFilteredSolutions, getTeamMembers, isFeasibleHere, boardIsFeasible, starLevel,
   evenSplit, validateConfig, generateSolutions, existsValidCompletion, propagateForcedMoves, uniPillStates, genderBadge,
   handleCSV, updateNumTeams, updateTeamSizeAt, distributeEvenly, toggleConstraint, backToUpload, backToConfig,
-  runSolve, toggleLock, resetAssignments, downloadTemplate, clearData,
+  runSolve, toggleLock, resetAssignments, downloadTemplate, clearData, updateTeamName, teamName, defaultTeamName, resizeTeamNames,
+  validatePairings, addPairing, addPairingFromForm, removePairing, reorderPreference, pairingLabel, pairingStatus,
+  visiblePreferenceEntries, buildPreferenceScorer, hardPairingsList, preferablePairingsList, refreshPairingsOnBoard,
+  diagnoseInfeasibility, undoLastAction, pushAssignmentHistory,
 });
 
 /* ======================================================================
