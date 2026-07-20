@@ -281,6 +281,9 @@ Cristina,Naples,F</pre>
           <div class="actions">
             <button class="btn" id="undo-btn" onclick="undoLastAction()">Undo</button>
             <button class="btn" onclick="resetAssignments()">Reset all</button>
+            <button class="btn" onclick="exportTeams()">
+              <i class="ti ti-download" style="font-size:12px;vertical-align:-1px" aria-hidden="true"></i> Export CSV
+            </button>
           </div>
         </div>
         <div class="panel" id="pairing-panel">
@@ -867,6 +870,49 @@ function downloadTemplate() {
   a.download = 'students_template.csv';
   a.click();
   URL.revokeObjectURL(a.href);
+}
+
+// Wraps a field in quotes (doubling any internal quotes) only if it actually
+// needs it — keeps the common case readable while staying correct for names/
+// universities/team-names that happen to contain a comma or quote.
+function csvField(val) {
+  const str = String(val == null ? '' : val);
+  return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+}
+
+// Exports the CURRENT BOARD STATE as it stands right now — i.e. only students
+// who are actually locked into a team (state.assignments), not a solver's
+// best guess for the rest of the board. This is deliberate: unlocked students
+// don't have a settled team yet, so silently placing them via
+// generateSolutions' sample here would (a) contradict the "app never guesses
+// on the user's behalf" rule documented for propagateForcedMoves, and (b) risk
+// exporting a labeling that was never actually confirmed. Anyone still
+// unplaced is called out in its own section instead of hidden.
+function exportTeams(state) {
+  const s = state || Store.getState();
+  const rows = [['team', 'name', 'university', 'gender']];
+  for (let ti = 0; ti < s.numTeams; ti++) {
+    const members = getTeamMembers(s, ti);
+    const name = teamName(s, ti);
+    members
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .forEach(st => rows.push([name, st.name, st.uni, st.gender]));
+  }
+  const unplaced = s.students.filter(st => s.assignments[st.id] === undefined);
+  unplaced
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .forEach(st => rows.push(['(unplaced)', st.name, st.uni, st.gender]));
+
+  const csv = rows.map(r => r.map(csvField).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'team_composition.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  return csv; // returned (not just downloaded) so tests can assert on content directly
 }
 
 /* ======================================================================
@@ -1586,7 +1632,7 @@ Object.assign(window, {
   runSolve, toggleLock, resetAssignments, downloadTemplate, clearData, updateTeamName, teamName, defaultTeamName, resizeTeamNames,
   validatePairings, addPairing, addPairingFromForm, removePairing, reorderPreference, pairingLabel, pairingStatus,
   visiblePreferenceEntries, buildPreferenceScorer, hardPairingsList, preferablePairingsList, refreshPairingsOnBoard,
-  diagnoseInfeasibility, undoLastAction, pushAssignmentHistory,
+  diagnoseInfeasibility, undoLastAction, pushAssignmentHistory, exportTeams, csvField,
 });
 
 /* ======================================================================
