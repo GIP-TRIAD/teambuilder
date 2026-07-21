@@ -9,8 +9,7 @@ machine.
 
 ## Features
 
-- **Upload a CSV** of students (`name, university, gender`). A template is one click
-  away if you don't have one yet.
+- **Upload a CSV** of students (`name, university, gender`). 
 - **Configure teams**: choose the number of teams and set each team's size
   individually.
 - **Toggle constraints**: university coverage is a hard requirement; gender balance
@@ -24,16 +23,12 @@ machine.
     yet.
 - **Pairing rules**: optionally require two specific students to be on the same
   team, or keep them apart — either as a hard rule or a soft preference.
-- **Undo / Reset**: step back through your locks, or clear the board and start over.
-- **Export**: download the current team composition as a CSV, ready to paste into a
-  spreadsheet or share with co-instructors.
+- **Undo / Reset**: step back or start over.
+- **Export**: download the current team composition as a CSV.
 - **Next round, different groups**: once a set of teams is locked in, click **Start
   next round** to save it as a reference and build a fresh set of teams
 biased toward
-  putting students with *different* teammates than last time. A live badge shows
-  both how many repeat pairings are on the board right now and the true minimum
-  still reachable from your current locks, so you know whether it's worth
-  continuing to click for a better arrangement.
+  putting students with *different* teammates than last time.
 - **Autosaves locally** as you go, so refreshing the page won't lose your progress.
 
 ## CSV format
@@ -47,8 +42,7 @@ Dominique,Marseille,F
 ```
 
 - `gender` accepts `M`/`F` or `Male`/`Female`.
-- Basic quoted fields are supported (e.g. `"Doe, Jane"`), though this isn't a full
-  RFC4180 parser.
+- Basic quoted fields are supported (e.g. `"Doe, Jane"`)
 
 ### Exported CSV
 
@@ -63,12 +57,8 @@ Team Beta,Dominique,Marseille,F
 ```
 
 Only students you've actually locked into a team are listed under that team.
-Anyone not yet locked in appears under `(unplaced)` rather than being guessed into a
-team on your behalf — the board's star recommendations are a hint, not a
-prediction, so exporting only ever reflects locks you've actually made.
 
 ## Known limitations
 
 - CSV parsing supports basic quoted fields but isn't a full RFC4180 implementation.
-  clears every lock at once.
 - Not tested for rosters larger than ~15 students.
