@@ -1597,6 +1597,44 @@ function resetAssignments() {
 /* ======================================================================
    RENDER
    ====================================================================== */
+// This app re-renders by wholesale string-rebuilding containers
+// (`container.innerHTML = ''` + recreate every child) rather than diffing —
+// simple and fine for buttons/pills/badges, but it means any text/number
+// input living inside one of those containers is a genuinely NEW DOM node
+// after every keystroke (oninput -> setState -> render), so the browser
+// drops focus to <body> before the next keystroke can land. A per-field
+// `document.activeElement !== el` guard can't fix this on its own — the
+// freshly-created element was never the focused one to begin with.
+//
+// `preserveFocus(container, rebuild)` wraps a rebuild: if focus is
+// currently inside `container`, it remembers the focused element's `id`
+// (every input this app rebuilds has a stable, render-independent id, e.g.
+// `cfg-size-${i}`, `team-name-${ti}`) plus its text-selection range, runs
+// `rebuild()` as normal, then finds the element with that same id in the
+// freshly-built DOM and restores focus + cursor position to it. No-op, and
+// effectively free, whenever focus isn't inside `container` to begin with.
+function preserveFocus(container, rebuild) {
+  const active = document.activeElement;
+  let savedId = null, selStart = null, selEnd = null;
+  if (active && container.contains(active) && active.id) {
+    savedId = active.id;
+    if (typeof active.selectionStart === 'number') {
+      selStart = active.selectionStart;
+      selEnd = active.selectionEnd;
+    }
+  }
+  rebuild();
+  if (savedId) {
+    const restored = document.getElementById(savedId);
+    if (restored) {
+      restored.focus();
+      if (selStart !== null && typeof restored.setSelectionRange === 'function') {
+        try { restored.setSelectionRange(selStart, selEnd); } catch (e) {} // some input types (e.g. number) reject setSelectionRange
+      }
+    }
+  }
+}
+
 function render() {
   const s = Store.getState();
   document.getElementById('upload-screen').style.display = s.screen === 'upload' ? '' : 'none';
@@ -1620,18 +1658,20 @@ function renderConfig(s) {
   numTeamsEl.oninput = e => updateNumTeams(e.target.value);
 
   const sizesList = document.getElementById('config-team-sizes');
-  sizesList.innerHTML = '';
-  s.teamSizes.forEach((sz, i) => {
-    const row = document.createElement('div');
-    row.className = 'team-size-row';
-    row.innerHTML = `<input type="text" class="tsr-name-input" id="cfg-name-${i}" placeholder="${defaultTeamName(i)}"><input type="number" min="1" id="cfg-size-${i}">`;
-    const nameInput = row.querySelector(`#cfg-name-${i}`);
-    if (document.activeElement !== nameInput) nameInput.value = (s.teamNames && s.teamNames[i]) || '';
-    nameInput.oninput = e => updateTeamName(i, e.target.value);
-    const input = row.querySelector('input[type="number"]');
-    if (document.activeElement !== input) input.value = sz;
-    input.oninput = e => updateTeamSizeAt(i, e.target.value);
-    sizesList.appendChild(row);
+  preserveFocus(sizesList, () => {
+    sizesList.innerHTML = '';
+    s.teamSizes.forEach((sz, i) => {
+      const row = document.createElement('div');
+      row.className = 'team-size-row';
+      row.innerHTML = `<input type="text" class="tsr-name-input" id="cfg-name-${i}" placeholder="${defaultTeamName(i)}"><input type="number" min="1" id="cfg-size-${i}">`;
+      const nameInput = row.querySelector(`#cfg-name-${i}`);
+      nameInput.value = (s.teamNames && s.teamNames[i]) || '';
+      nameInput.oninput = e => updateTeamName(i, e.target.value);
+      const input = row.querySelector('input[type="number"]');
+      input.value = sz;
+      input.oninput = e => updateTeamSizeAt(i, e.target.value);
+      sizesList.appendChild(row);
+    });
   });
 
   const slots = s.teamSizes.reduce((a, b) => a + b, 0);
@@ -1816,6 +1856,10 @@ function renderTeams(s) {
   const filtered = getFilteredSolutions(s);
   const isDead = !boardIsFeasible(s);
   const col = document.getElementById('teams-col');
+  preserveFocus(col, () => renderTeamsInner(s, col, unis, filtered, isDead));
+}
+
+function renderTeamsInner(s, col, unis, filtered, isDead) {
   col.innerHTML = '';
   for (let ti = 0; ti < s.numTeams; ti++) {
     const members = getTeamMembers(s, ti);
@@ -1833,7 +1877,7 @@ function renderTeams(s) {
       <div class="uni-columns" id="cols-${ti}"></div>`;
     col.appendChild(card);
     const nameInput = document.getElementById(`team-name-${ti}`);
-    if (document.activeElement !== nameInput) nameInput.value = (s.teamNames && s.teamNames[ti]) || '';
+    nameInput.value = (s.teamNames && s.teamNames[ti]) || '';
     nameInput.oninput = e => updateTeamName(ti, e.target.value);
     const colsEl = document.getElementById(`cols-${ti}`);
     unis.forEach(uni => {
