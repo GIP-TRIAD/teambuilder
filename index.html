@@ -1370,6 +1370,40 @@ function toggleConstraint(id) {
   saveToStorage();
 }
 function genPairingId() { return 'pr' + Math.random().toString(36).slice(2, 9); }
+// Keeps the "Student A" / "Student B" pairing-form dropdowns mutually
+// exclusive — a student can't have a relationship with themselves, so
+// whoever's picked in one select is simply never offered as an option in the
+// other, rather than being selectable and then silently rejected by
+// addPairing()'s `studentA === studentB` guard. Populated sequentially
+// (A first, then B against A's just-settled value) rather than
+// simultaneously: on a fresh render neither select has a value yet, and a
+// browser auto-selects a freshly-populated <select>'s first option — doing
+// both at once would compute each one's exclusion off the OTHER's still-empty
+// pre-render value, so both would independently default to the same first
+// student. Sequencing makes B's default genuinely account for A's.
+// Re-run on every renderPairingPanel() call (roster/pairing-list changes) AND
+// wired as each select's own onchange — a dropdown edit alone doesn't touch
+// the Store, so without the onchange hook the other select wouldn't stay in
+// sync until some unrelated re-render happened to run.
+function renderPairingSelects(s) {
+  const selA = document.getElementById('pf-a');
+  const selB = document.getElementById('pf-b');
+  const prevA = selA.value;
+  const prevB = selB.value;
+  const optionsExcluding = excludeId => s.students
+    .filter(st => st.id !== excludeId)
+    .map(st => `<option value="${st.id}">${st.name} (${st.uni})</option>`)
+    .join('');
+
+  selA.innerHTML = optionsExcluding(prevB);
+  if (s.students.some(st => st.id === prevA) && prevA !== prevB) selA.value = prevA;
+
+  selB.innerHTML = optionsExcluding(selA.value);
+  if (s.students.some(st => st.id === prevB) && prevB !== selA.value) selB.value = prevB;
+
+  selA.onchange = () => renderPairingSelects(Store.getState());
+  selB.onchange = () => renderPairingSelects(Store.getState());
+}
 // Reads the add-pairing form fields directly (simplest wiring for a form
 // that's just four selects + a button, consistent with this app's style of
 // inline DOM reads in action functions rather than a separate form-state slice).
@@ -1679,13 +1713,7 @@ function studentPairingNotes(state, studentId) {
 // pairing UI almost exactly, just targeting the app-screen element ids and
 // adding a live per-rule status badge next to each row.
 function renderPairingPanel(s) {
-  const studentOptions = s.students.map(st => `<option value="${st.id}">${st.name} (${st.uni})</option>`).join('');
-  ['pf-a', 'pf-b'].forEach(elId => {
-    const sel = document.getElementById(elId);
-    const prevVal = sel.value;
-    sel.innerHTML = studentOptions;
-    if (s.students.some(st => st.id === prevVal)) sel.value = prevVal;
-  });
+  renderPairingSelects(s);
 
   const statusBadge = p => {
     const status = pairingStatus(s, p);
@@ -1900,7 +1928,7 @@ Object.assign(window, {
   validatePairings, addPairing, addPairingFromForm, removePairing, reorderPreference, pairingLabel, pairingStatus,
   visiblePreferenceEntries, buildPreferenceScorer, hardPairingsList, preferablePairingsList, refreshPairingsOnBoard,
   diagnoseInfeasibility, undoLastAction, pushAssignmentHistory, exportTeams, csvField,
-  startNextRound, repeatTeammateScore, currentRepeatCount, minRepeatsAchievable, computeMinRepeatsInfo,
+  startNextRound, repeatTeammateScore, currentRepeatCount, minRepeatsAchievable, computeMinRepeatsInfo, renderPairingSelects,
 });
 
 /* ======================================================================
