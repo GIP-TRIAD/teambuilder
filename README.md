@@ -27,11 +27,18 @@ machine.
 - **Undo / Reset**: step back through your locks, or clear the board and start over.
 - **Export**: download the current team composition as a CSV, ready to paste into a
   spreadsheet or share with co-instructors.
+- **Next round, different groups**: once a set of teams is locked in, click **Start
+  next round** to save it as a reference and build a fresh set of teams
+biased toward
+  putting students with *different* teammates than last time. A live badge shows
+  both how many repeat pairings are on the board right now and the true minimum
+  still reachable from your current locks, so you know whether it's worth
+  continuing to click for a better arrangement.
 - **Autosaves locally** as you go, so refreshing the page won't lose your progress.
 
 ## CSV format
 
-```
+```csv
 name,university,gender
 Chen,Singapore,M
 Lulu,Singapore,F
@@ -47,7 +54,7 @@ Dominique,Marseille,F
 
 `Export CSV` produces one row per student:
 
-```
+```csv
 team,name,university,gender
 Team Alpha,Chen,Singapore,M
 Team Alpha,Marcel,Marseille,M
@@ -63,6 +70,5 @@ prediction, so exporting only ever reflects locks you've actually made.
 ## Known limitations
 
 - CSV parsing supports basic quoted fields but isn't a full RFC4180 implementation.
-- No per-action undo history beyond a linear stack cleared on rebuild — "Reset all"
   clears every lock at once.
 - Not tested for rosters larger than ~15 students.
