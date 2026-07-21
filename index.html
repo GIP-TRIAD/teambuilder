@@ -165,8 +165,8 @@ button:disabled{cursor:not-allowed;opacity:0.5}
 .pairing-form select{width:100%;font-size:12px;padding:6px 7px;border:0.5px solid var(--border-md);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:var(--font)}
 .pairing-form label{display:block;font-size:10px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.03em;margin-bottom:3px}
 .pairing-list{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
-.pairing-row{display:flex;align-items:flex-start;gap:8px;font-size:12px;padding:6px 9px;border-radius:var(--radius);background:var(--bg-secondary);border:0.5px solid var(--border)}
-.pairing-row .pr-label{flex:1;min-width:0;white-space:normal;overflow-wrap:anywhere;line-height:1.4;padding-top:1px}
+.pairing-row{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px;font-size:12px;padding:6px 9px;border-radius:var(--radius);background:var(--bg-secondary);border:0.5px solid var(--border)}
+.pairing-row .pr-label{flex:1 1 140px;min-width:140px;white-space:normal;overflow-wrap:anywhere;line-height:1.4;padding-top:1px}
 .pairing-row .pr-tag{flex-shrink:0;white-space:nowrap;font-size:10px;padding:1px 6px;border-radius:999px;background:var(--bg-tertiary);color:var(--text-secondary)}
 .pairing-row.pref-row{cursor:grab;background:var(--bg)}
 .pairing-row.pref-row.drag-over{border-color:var(--border-info);background:var(--bg-info)}
@@ -175,6 +175,11 @@ button:disabled{cursor:not-allowed;opacity:0.5}
 .pairing-row .pr-remove:hover{color:var(--text-danger)}
 .pairing-row .pr-rank{flex-shrink:0;white-space:nowrap;font-size:10px;color:var(--text-tertiary);min-width:14px}
 .pairing-row .badge{flex-shrink:0;white-space:nowrap}
+/* The diversity badge ("N repeats · min possible: M") can run noticeably
+   longer than every other badge in this row (which are all short, fixed
+   labels) — let this one specifically wrap onto multiple lines rather than
+   inheriting nowrap and overflowing a narrow sidebar. */
+.pairing-row .badge.badge-wrap{white-space:normal;overflow-wrap:anywhere;max-width:100%}
 .pairing-empty{font-size:12px;color:var(--text-tertiary);padding:4px 0}
 .pref-hint{font-size:11px;color:var(--text-tertiary);margin:2px 0 8px;overflow-wrap:anywhere}
 </style>
@@ -284,6 +289,9 @@ Cristina,Naples,F</pre>
             <button class="btn" onclick="exportTeams()">
               <i class="ti ti-download" style="font-size:12px;vertical-align:-1px" aria-hidden="true"></i> Export CSV
             </button>
+            <button class="btn" onclick="startNextRound()" title="Save this round and clear the board to build a new one, biased away from repeating the same teammates">
+              <i class="ti ti-refresh" aria-hidden="true"></i> Start next round
+            </button>
           </div>
         </div>
         <div class="panel" id="pairing-panel">
@@ -351,6 +359,24 @@ const Store = (() => {
     constraintToggles: { uniCoverage: true, genderBalance: true },
     pairings: [],                 // [{id, studentA, studentB, type:'same'|'different', strength:'hard'|'preferable'}]
     preferenceOrder: ['genderBalance'], // ranked ids (genderBalance + preferable pairing ids); top = highest priority
+    // Sparse studentId -> teamIndex snapshot of the *previous* round's locked-in
+    // assignments (same shape as `assignments` itself), or null before any round
+    // has been completed. Deliberately only the immediately previous round, not
+    // a cumulative history — per explicit user decision, "spread out from last
+    // time," not "never repeat across the whole term." Only ever set by
+    // startNextRound(), which copies the live `assignments` map wholesale, so
+    // anyone left unplaced that round simply has no entry here and therefore no
+    // repeat risk — this app never guesses a placement on the user's behalf,
+    // consistent with the same principle documented for propagateForcedMoves.
+    previousRoundAssignments: null,
+    // Cached result of minRepeatsAchievable() against the CURRENT locks —
+    // { min, capped } or null before there's a previous round to compare
+    // against. Deliberately cached rather than computed during render: it's a
+    // real branch-and-bound search (can cost as much as a full lock/unlock
+    // does), so it's only recomputed at the specific action sites that can
+    // actually change its answer (lock/unlock, reset, next round, rule
+    // changes, initial solve) — see computeMinRepeatsInfo's call sites.
+    minRepeatsInfo: null,
     solveResult: { solutions: [], capped: false, errors: [], nodesExplored: 0 },
     assignments: {},             // studentId -> teamIndex, only present once locked
     // Linear undo stack of previous `assignments` snapshots, most-recent last.
@@ -527,6 +553,15 @@ function visiblePreferenceEntries(state) {
         return state.constraintToggles.genderBalance !== false
           ? { id, kind: 'gender', label: 'Balance gender within each team' } : null;
       }
+      if (id === 'avoidRepeats') {
+        // Only shows up once a previous round actually exists to compare
+        // against; if it's toggled off, or there's no previous round (e.g.
+        // right after a fresh CSV upload even if 'avoidRepeats' is still sitting
+        // in a persisted preferenceOrder), it's silently skipped — same
+        // "backing item no longer exists/qualifies" convention as pairing ids.
+        return (state.previousRoundAssignments && state.constraintToggles.avoidRepeats !== false)
+          ? { id, kind: 'diversity', label: 'Avoid repeating teammates from the previous round' } : null;
+      }
       const p = state.pairings.find(pp => pp.id === id && pp.strength === 'preferable');
       if (!p || !ids.has(p.studentA) || !ids.has(p.studentB)) return null;
       return { id, kind: 'pairing', label: pairingLabel(state.students, p), pairing: p };
@@ -534,22 +569,54 @@ function visiblePreferenceEntries(state) {
     .filter(Boolean);
 }
 
+// Counts, within ONE candidate team, how many pairs of its members were also
+// on the same team in `prevAssignments` (the previous round's sparse
+// studentId -> teamIndex map). Unlike pairing rules, this needs no cross-team
+// lookup — a repeat is entirely a within-this-team fact — so it scores just
+// like genderBalance's per-team score(team), not like a preferable pairing.
+// Anyone missing from `prevAssignments` (left unplaced last round) simply
+// can't contribute a repeat, by construction.
+function repeatTeammateScore(team, prevAssignments) {
+  let repeats = 0;
+  for (let i = 0; i < team.length; i++) {
+    const prevTi = prevAssignments[team[i].id];
+    if (prevTi === undefined) continue;
+    for (let j = i + 1; j < team.length; j++) {
+      if (prevAssignments[team[j].id] === prevTi) repeats++;
+    }
+  }
+  return repeats;
+}
+// Live "how many repeats are on the board right now" count, for the side-panel
+// badge next to the preference row — sums repeatTeammateScore across every
+// team's *current* locked-in members. Purely informational; the solver's own
+// ranking already uses repeatTeammateScore directly via buildPreferenceScorer.
+function currentRepeatCount(state) {
+  let total = 0;
+  for (let ti = 0; ti < state.numTeams; ti++) total += repeatTeammateScore(getTeamMembers(state, ti), state.previousRoundAssignments || {});
+  return total;
+}
+
 // Builds a single scoreSolution(teams) -> number function (0 = ideal, lower
-// is better) combining genderBalance and every preferable pairing, weighted
-// by rank in state.preferenceOrder — top of the list gets the largest
-// weight, but it's a plain weighted sum (not exponential/lexicographic), so
-// several lower-priority items can outweigh one higher-priority item. This
-// replaces the old totalSoftScore for ranking generateSolutions' output.
+// is better) combining genderBalance, "avoid repeating last round's
+// teammates", and every preferable pairing, weighted by rank in
+// state.preferenceOrder — top of the list gets the largest weight, but it's
+// a plain weighted sum (not exponential/lexicographic), so several
+// lower-priority items can outweigh one higher-priority item. This replaces
+// the old totalSoftScore for ranking generateSolutions' output.
 function buildPreferenceScorer(state) {
   const entries = visiblePreferenceEntries(state);
   const n = entries.length;
   const genderScorer = SOFT_CONSTRAINTS.find(c => c.id === 'genderBalance');
+  const prevAssignments = state.previousRoundAssignments || {};
   return function scoreSolution(teams) {
     let total = 0;
     entries.forEach((entry, idx) => {
       const weight = n - idx; // top of the ranked list = highest weight
       if (entry.kind === 'gender') {
         for (const team of teams) total += weight * genderScorer.score(team);
+      } else if (entry.kind === 'diversity') {
+        for (const team of teams) total += weight * repeatTeammateScore(team, prevAssignments);
       } else {
         const teamOf = studentId => teams.findIndex(t => t.some(s => s.id === studentId));
         const ta = teamOf(entry.pairing.studentA), tb = teamOf(entry.pairing.studentB);
@@ -766,6 +833,126 @@ function existsValidCompletion(students, numTeams, teamSizes, hardConstraints, h
 }
 
 /* ======================================================================
+   MINIMUM-REPEATS SEARCH — a third, separate search, distinct from both
+   solvers above. Answers "given the current locks and the currently active
+   hard rules, what's the LOWEST total repeat count (vs. previousRoundAssignments)
+   any valid completion could reach?" This is deliberately NOT read off
+   generateSolutions' capped sample — same reasoning as existsValidCompletion:
+   the true minimum could easily not appear in a biased, capped sample.
+
+   Unlike existsValidCompletion (a yes/no existence check that can stop at the
+   first hit), this needs an actual minimum, so it's a real branch-and-bound
+   search: because a repeat pair, once created by placing a student next to a
+   former teammate, can never be un-created later in the same branch, the
+   running repeat count is monotonically non-decreasing along any branch. That
+   means once a branch's running count reaches the best complete solution
+   found so far, it can only tie or lose — never win — so it's pruned
+   immediately. This is what makes finding a genuine (often provable) minimum
+   tractable instead of requiring full enumeration.
+
+   Returns { min, capped }:
+     - min: the lowest total repeat count found across any complete valid
+       arrangement reachable from the current locks, or null if none was
+       found (either genuinely infeasible, or the search ran out of budget
+       before finding even one — capped disambiguates which).
+     - capped: true means the node budget ran out before the search could
+       exhaustively rule out something lower — `min`, if non-null, is a real
+       upper bound (an arrangement that actually achieves it), just not
+       necessarily the provable optimum. Surfaced to the caller as-is rather
+       than silently presented as exact — same "don't quietly guess" spirit
+       as existsValidCompletion's fail-open behavior, just inverted (this
+       fails by admitting uncertainty rather than by assuming the safe answer).
+   ====================================================================== */
+function minRepeatsAchievable(students, numTeams, teamSizes, hardConstraints, hardPairings, assignments, prevAssignments, opts = {}) {
+  const { maxNodes = 300_000 } = opts;
+  const validation = validateConfig(students, numTeams, teamSizes);
+  if (!validation.ok) return { min: null, capped: false };
+  const allUnis = validation.unis;
+
+  const teams = Array.from({ length: numTeams }, () => []);
+  const located = {};
+  for (const st of students) {
+    const ti = assignments[st.id];
+    if (ti !== undefined) {
+      if (teams[ti].length >= teamSizes[ti]) return { min: null, capped: false }; // overcommitted — no valid completion exists at all
+      teams[ti].push(st);
+      located[st.id] = ti;
+    }
+  }
+  for (const p of hardPairings) {
+    const ta = located[p.studentA], tb = located[p.studentB];
+    if (ta === undefined || tb === undefined) continue;
+    const same = ta === tb;
+    if ((p.type === 'same' && !same) || (p.type === 'different' && same)) return { min: null, capped: false };
+  }
+  for (let ti = 0; ti < numTeams; ti++) {
+    if (teams[ti].length === teamSizes[ti]) {
+      const ok = hardConstraints.every(c => c.check(teams[ti], { allUnis, isComplete: true, capacity: teamSizes[ti] }));
+      if (!ok) return { min: null, capped: false };
+    }
+  }
+
+  // Repeats already locked in are a fixed cost every completion pays, so the
+  // search starts counting from there rather than from zero.
+  const baseline = teams.reduce((sum, team) => sum + repeatTeammateScore(team, prevAssignments), 0);
+
+  const unlocked = students
+    .filter(st => assignments[st.id] === undefined)
+    .sort((a, b) => {
+      const ca = students.filter(s => s.uni === a.uni).length;
+      const cb = students.filter(s => s.uni === b.uni).length;
+      return ca - cb;
+    });
+
+  let best = Infinity;
+  let foundAny = false;
+  let nodes = 0;
+  let capped = false;
+
+  function backtrack(i, currentRepeats) {
+    if (capped) return;
+    if (++nodes > maxNodes) { capped = true; return; }
+    if (currentRepeats >= best) return; // can only tie-or-worsen from here — the core B&B prune
+    if (i === unlocked.length) {
+      foundAny = true;
+      best = currentRepeats;
+      return;
+    }
+    const student = unlocked[i];
+    const prevTi = prevAssignments[student.id];
+    for (let ti = 0; ti < numTeams; ti++) {
+      if (teams[ti].length >= teamSizes[ti]) continue;
+      const addedRepeats = prevTi === undefined ? 0 : teams[ti].filter(m => prevAssignments[m.id] === prevTi).length;
+      teams[ti].push(student);
+      located[student.id] = ti;
+      const isComplete = teams[ti].length === teamSizes[ti];
+      const ok = hardConstraints.every(c => c.check(teams[ti], { allUnis, isComplete, capacity: teamSizes[ti] }))
+        && hardPairingsOk(student.id, ti, located, hardPairings);
+      if (ok) backtrack(i + 1, currentRepeats + addedRepeats);
+      teams[ti].pop();
+      delete located[student.id];
+      if (capped) return;
+    }
+  }
+  backtrack(0, baseline);
+  return { min: foundAny ? best : null, capped };
+}
+// Convenience wrapper: builds the min-repeats search's arguments straight off
+// app state, the same way isFeasibleHere/boardIsFeasible wrap
+// existsValidCompletion. Returns null (not a search result) when there's no
+// previous round to compare against at all — the UI treats null as "not
+// applicable," distinct from a search that ran and found nothing.
+function computeMinRepeatsInfo(state, assignments) {
+  if (!state.previousRoundAssignments) return null;
+  const hard = activeHardConstraints(state.constraintToggles);
+  const hardPairings = hardPairingsList(state.pairings);
+  return minRepeatsAchievable(
+    state.students, state.numTeams, state.teamSizes, hard, hardPairings,
+    assignments, state.previousRoundAssignments
+  );
+}
+
+/* ======================================================================
    FORCED-MOVE PROPAGATION
    After any lock changes, some other student may end up with exactly one
    remaining feasible team — at that point it's not a choice anymore, it's
@@ -918,7 +1105,7 @@ function exportTeams(state) {
 /* ======================================================================
    PERSISTENCE
    ====================================================================== */
-const STORAGE_KEY = 'teambuilder-v6'; // bumped: added teamNames
+const STORAGE_KEY = 'teambuilder-v7'; // bumped: added previousRoundAssignments
 function saveToStorage() {
   const s = Store.getState();
   try {
@@ -926,6 +1113,7 @@ function saveToStorage() {
       students: s.students, numTeams: s.numTeams, teamSizes: s.teamSizes, teamNames: s.teamNames,
       constraintToggles: s.constraintToggles, screen: s.screen === 'app' ? 'app' : 'config',
       assignments: s.assignments, pairings: s.pairings, preferenceOrder: s.preferenceOrder,
+      previousRoundAssignments: s.previousRoundAssignments,
     }));
   } catch (e) {}
 }
@@ -940,11 +1128,14 @@ function loadFromStorage() {
       teamNames: resizeTeamNames(saved.teamNames, saved.numTeams),
       constraintToggles: saved.constraintToggles || { uniCoverage: true, genderBalance: true },
       pairings: saved.pairings || [], preferenceOrder: saved.preferenceOrder || ['genderBalance'],
+      previousRoundAssignments: saved.previousRoundAssignments || null,
       screen: 'config',
     });
     if (saved.screen === 'app') {
       runSolve();
-      if (saved.assignments) Store.setState({ assignments: saved.assignments });
+      if (saved.assignments) {
+        Store.setState({ assignments: saved.assignments, minRepeatsInfo: computeMinRepeatsInfo(Store.getState(), saved.assignments) });
+      }
     }
     return true;
   } catch (e) { return false; }
@@ -954,6 +1145,7 @@ function clearData() {
   Store.setState({
     screen: 'upload', students: [], solveResult: { solutions: [], capped: false, errors: [], nodesExplored: 0 },
     assignments: {}, pairings: [], preferenceOrder: ['genderBalance'], teamNames: [], assignmentHistory: [],
+    previousRoundAssignments: null, minRepeatsInfo: null,
   });
 }
 
@@ -1123,6 +1315,7 @@ function handleCSV(file) {
       constraintToggles: { uniCoverage: true, genderBalance: true },
       solveResult: { solutions: [], capped: false, errors: [], nodesExplored: 0 },
       assignments: {}, pairings: [], preferenceOrder: ['genderBalance'], assignmentHistory: [],
+      previousRoundAssignments: null, minRepeatsInfo: null,
     });
     saveToStorage();
   };
@@ -1162,8 +1355,18 @@ function distributeEvenly() {
 }
 function toggleConstraint(id) {
   const s = Store.getState();
-  Store.setState({ constraintToggles: { ...s.constraintToggles, [id]: !s.constraintToggles[id] } });
-  if (id === 'genderBalance') refreshPairingsOnBoard();
+  // Toggles read as "on" by the `!== false` convention used throughout (see
+  // visiblePreferenceEntries) treat a never-yet-set value as on by default —
+  // so the flip has to start from that same effective value, not the raw
+  // (possibly undefined) one, or the first toggle on a freshly-introduced id
+  // like 'avoidRepeats' would silently no-op.
+  const current = s.constraintToggles[id] !== false;
+  Store.setState({ constraintToggles: { ...s.constraintToggles, [id]: !current } });
+  // Both are ranking-only soft preferences read live off state inside
+  // buildPreferenceScorer, so flipping either needs a re-solve to actually
+  // change anything (unlike a hard constraint, which would need pruning
+  // re-run too, but neither of these ever reaches that path).
+  if (id === 'genderBalance' || id === 'avoidRepeats') refreshPairingsOnBoard();
   saveToStorage();
 }
 function genPairingId() { return 'pr' + Math.random().toString(36).slice(2, 9); }
@@ -1244,7 +1447,10 @@ function refreshPairingsOnBoard() {
   const scoreSolution = buildPreferenceScorer(s);
   const result = generateSolutions(s.students, s.numTeams, s.teamSizes, hard, hardPairings, scoreSolution);
   const assignments = propagateForcedMoves({ ...s, solveResult: result });
-  Store.setState({ solveResult: result, assignments, assignmentHistory: pushAssignmentHistory(s) });
+  Store.setState({
+    solveResult: result, assignments, assignmentHistory: pushAssignmentHistory(s),
+    minRepeatsInfo: computeMinRepeatsInfo(s, assignments),
+  });
 }
 function backToUpload() {
   Store.setState({ screen: 'upload', students: [] });
@@ -1269,7 +1475,39 @@ function runSolve() {
   const assignments = propagateForcedMoves({ ...s, solveResult: result, assignments: {} });
   // Fresh board — nothing meaningful to undo back to, so the stack resets here
   // rather than accumulating across separate "Build teams" runs.
-  Store.setState({ screen: 'app', solveResult: result, assignments, assignmentHistory: [] });
+  Store.setState({
+    screen: 'app', solveResult: result, assignments, assignmentHistory: [],
+    minRepeatsInfo: computeMinRepeatsInfo(s, assignments),
+  });
+  saveToStorage();
+}
+// Closes out the current round and opens a new one: snapshots the live,
+// locked-in `assignments` as `previousRoundAssignments` (the reference the
+// new round's solver will try to diversify away from), clears the board, and
+// re-solves — same shape as runSolve(), just without touching students,
+// config, or pairing rules. Mirrors runSolve()'s solve/propagate sequence
+// directly (rather than delegating to refreshPairingsOnBoard) so the fresh
+// `previousRoundAssignments` and `preferenceOrder` are guaranteed to already
+// be in effect for the scoreSolution built here, not racing a stale read.
+function startNextRound() {
+  const s = Store.getState();
+  const previousRoundAssignments = s.assignments;
+  // Turn "avoid repeats" on by default the first time it becomes available
+  // (appended at the bottom of the ranked list, same convention as a newly
+  // added preferable pairing) — but only the first time; if the teacher has
+  // already re-ranked or disabled it on a prior round, that choice sticks.
+  const preferenceOrder = s.preferenceOrder.includes('avoidRepeats')
+    ? s.preferenceOrder : [...s.preferenceOrder, 'avoidRepeats'];
+  const nextState = { ...s, previousRoundAssignments, preferenceOrder };
+  const hard = activeHardConstraints(s.constraintToggles);
+  const hardPairings = hardPairingsList(s.pairings);
+  const scoreSolution = buildPreferenceScorer(nextState);
+  const result = generateSolutions(s.students, s.numTeams, s.teamSizes, hard, hardPairings, scoreSolution);
+  const assignments = propagateForcedMoves({ ...nextState, solveResult: result, assignments: {} });
+  Store.setState({
+    previousRoundAssignments, preferenceOrder, solveResult: result, assignments, assignmentHistory: [],
+    minRepeatsInfo: computeMinRepeatsInfo(nextState, assignments),
+  });
   saveToStorage();
 }
 // Snapshot the current assignments onto the undo stack before a change is
@@ -1305,16 +1543,20 @@ function toggleLock(studentId, ti) {
     if (!isFeasibleHere(s, studentId, ti)) return; // guard against stale clicks; UI already disables this case
     assignments = { ...s.assignments, [studentId]: ti };
   }
+  const nextAssignments = propagateForcedMoves({ ...s, assignments });
   Store.setState({
-    assignments: propagateForcedMoves({ ...s, assignments }),
+    assignments: nextAssignments,
     assignmentHistory: pushAssignmentHistory(s),
+    minRepeatsInfo: computeMinRepeatsInfo(s, nextAssignments),
   });
 }
 function resetAssignments() {
   const s = Store.getState();
+  const assignments = propagateForcedMoves({ ...s, assignments: {} });
   Store.setState({
-    assignments: propagateForcedMoves({ ...s, assignments: {} }),
+    assignments,
     assignmentHistory: pushAssignmentHistory(s),
+    minRepeatsInfo: computeMinRepeatsInfo(s, assignments),
   });
 }
 
@@ -1473,14 +1715,32 @@ function renderPairingPanel(s) {
     row.dataset.idx = idx;
     const removeBtn = entry.kind === 'pairing'
       ? `<button class="pr-remove" title="Remove rule" onclick="removePairing('${entry.id}')">✕</button>`
-      : `<input type="checkbox" id="c-genderBalance" checked title="Untick to disable">`;
+      : `<input type="checkbox" id="c-${entry.id}" checked title="Untick to disable">`;
+    // "N repeats" reflects the board exactly as locked right now (currentRepeatCount,
+    // cheap, computed live). "min possible: M" comes from the cached
+    // minRepeatsInfo (a real branch-and-bound search — see minRepeatsAchievable's
+    // comment) recomputed only on lock/rule changes, not on every render. When
+    // capped, that search only found an upper bound, not a proven optimum — shown
+    // as "≤M" rather than presented as exact, same honesty convention the rest of
+    // the app uses for capped searches.
+    const diversityBadge = entry.kind === 'diversity'
+      ? (() => {
+          const n = currentRepeatCount(s);
+          const info = s.minRepeatsInfo;
+          let minText = '';
+          if (info && info.min !== null) minText = ` · min possible: ${info.capped ? `≤${info.min}` : info.min}`;
+          else if (info && info.capped) minText = ' · min possible: unknown (search limit reached)';
+          return `<span class="badge badge-wrap badge-${n === 0 ? 'ok' : 'warn'}" title="Repeat pairs on the board right now, and the lowest total reachable from these exact locks">${n} repeat${n === 1 ? '' : 's'}${minText}</span>`;
+        })()
+      : '';
     row.innerHTML = `
       <span class="pr-rank">#${idx + 1}</span>
       <span class="pr-grip" aria-hidden="true">⠿</span>
       <span class="pr-label">${entry.label}</span>
       ${entry.kind === 'pairing' ? '<span class="pr-tag">preferable</span>' + statusBadge(entry.pairing) : ''}
+      ${diversityBadge}
       ${removeBtn}`;
-    if (entry.kind === 'gender') row.querySelector('input').onchange = () => toggleConstraint('genderBalance');
+    if (entry.kind === 'gender' || entry.kind === 'diversity') row.querySelector('input').onchange = () => toggleConstraint(entry.id);
     row.ondragstart = e => { e.dataTransfer.setData('text/plain', String(idx)); e.dataTransfer.effectAllowed = 'move'; };
     row.ondragover = e => { e.preventDefault(); row.classList.add('drag-over'); };
     row.ondragleave = () => row.classList.remove('drag-over');
@@ -1497,6 +1757,13 @@ function renderPairingPanel(s) {
     row.className = 'pairing-row';
     row.innerHTML = `<input type="checkbox" id="c-genderBalance-off"><label for="c-genderBalance-off" class="pr-label">Balance gender within each team</label>`;
     row.querySelector('input').onchange = () => toggleConstraint('genderBalance');
+    prefEl.appendChild(row);
+  }
+  if (s.previousRoundAssignments && s.constraintToggles.avoidRepeats === false) {
+    const row = document.createElement('div');
+    row.className = 'pairing-row';
+    row.innerHTML = `<input type="checkbox" id="c-avoidRepeats-off"><label for="c-avoidRepeats-off" class="pr-label">Avoid repeating teammates from the previous round</label>`;
+    row.querySelector('input').onchange = () => toggleConstraint('avoidRepeats');
     prefEl.appendChild(row);
   }
   if (!hardRules.length && !preferablePairingsList(s.pairings).length) {
@@ -1633,6 +1900,7 @@ Object.assign(window, {
   validatePairings, addPairing, addPairingFromForm, removePairing, reorderPreference, pairingLabel, pairingStatus,
   visiblePreferenceEntries, buildPreferenceScorer, hardPairingsList, preferablePairingsList, refreshPairingsOnBoard,
   diagnoseInfeasibility, undoLastAction, pushAssignmentHistory, exportTeams, csvField,
+  startNextRound, repeatTeammateScore, currentRepeatCount, minRepeatsAchievable, computeMinRepeatsInfo,
 });
 
 /* ======================================================================
