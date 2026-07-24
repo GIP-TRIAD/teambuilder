@@ -157,7 +157,6 @@ button:disabled{cursor:not-allowed;opacity:0.5}
 
 /* csv footer */
 .csv-footer{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.csv-info{font-size:11px;color:var(--text-tertiary);flex:1}
 
 /* pairings */
 .pairing-form{display:flex;flex-direction:column;gap:6px;background:var(--bg-secondary);border-radius:var(--radius);padding:8px;margin-bottom:8px}
@@ -245,12 +244,6 @@ Cristina,Naples,F</pre>
         <div class="slots-hint" id="config-slots-hint"></div>
         <button class="btn" style="margin-top:8px" onclick="distributeEvenly()">Distribute evenly</button>
 
-        <div class="section-title">Constraints</div>
-        <div id="config-constraints"></div>
-
-        <div class="section-title">Pairing rules</div>
-        <div class="pref-hint" id="config-pairing-summary"></div>
-
         <div class="err-box" id="config-err" style="display:none"></div>
         <div class="err-box" id="config-pairing-err" style="display:none"></div>
 
@@ -286,13 +279,14 @@ Cristina,Naples,F</pre>
           <div class="actions">
             <button class="btn" id="undo-btn" onclick="undoLastAction()">Undo</button>
             <button class="btn" onclick="resetAssignments()">Reset all</button>
-            <button class="btn" onclick="exportTeams()">
-              <i class="ti ti-download" style="font-size:12px;vertical-align:-1px" aria-hidden="true"></i> Export CSV
-            </button>
             <button class="btn" onclick="startNextRound()" title="Save this round and clear the board to build a new one, biased away from repeating the same teammates">
               <i class="ti ti-refresh" aria-hidden="true"></i> Start next round
             </button>
           </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Constraints</div>
+          <div id="app-constraints"></div>
         </div>
         <div class="panel" id="pairing-panel">
           <div class="panel-title">Pairing rules</div>
@@ -328,12 +322,11 @@ Cristina,Naples,F</pre>
         </div>
         <div class="panel">
           <div class="csv-footer">
-            <span class="csv-info" id="csv-info"></span>
             <button class="btn" onclick="document.getElementById('csv-reload').click()">
               <i class="ti ti-upload" style="font-size:13px;vertical-align:-1px" aria-hidden="true"></i> New CSV
             </button>
-            <button class="btn btn-danger" onclick="clearData()">
-              <i class="ti ti-trash" style="font-size:13px;vertical-align:-1px" aria-hidden="true"></i> Clear
+            <button class="btn" onclick="exportTeams()">
+              <i class="ti ti-download" style="font-size:13px;vertical-align:-1px" aria-hidden="true"></i> Export CSV
             </button>
             <input type="file" id="csv-reload" accept=".csv,text/csv" style="display:none">
           </div>
@@ -413,8 +406,8 @@ const HARD_CONSTRAINTS = [
   {
     id: 'uniCoverage',
     label: 'Every team includes every university',
-    desc: 'Hard requirement — disabling this removes the diversity guarantee entirely.',
-    locked: true, // always on; kept as a flag so future hard constraints can be optional
+    desc: 'On by default. Turning this off removes the diversity guarantee entirely.',
+    locked: false, // toggleable — on by default via constraintToggles.uniCoverage
     check(team, ctx) {
       const present = new Set(team.map(s => s.uni));
       const missing = ctx.allUnis.filter(u => !present.has(u));
@@ -439,7 +432,7 @@ const SOFT_CONSTRAINTS = [
 ];
 
 function activeHardConstraints(toggles) {
-  return HARD_CONSTRAINTS.filter(c => c.locked || toggles[c.id]);
+  return HARD_CONSTRAINTS.filter(c => c.locked || toggles[c.id] !== false);
 }
 function activeSoftConstraints(toggles) {
   return SOFT_CONSTRAINTS.filter(c => toggles[c.id] !== false);
@@ -1140,15 +1133,6 @@ function loadFromStorage() {
     return true;
   } catch (e) { return false; }
 }
-function clearData() {
-  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-  Store.setState({
-    screen: 'upload', students: [], solveResult: { solutions: [], capped: false, errors: [], nodesExplored: 0 },
-    assignments: {}, pairings: [], preferenceOrder: ['genderBalance'], teamNames: [], assignmentHistory: [],
-    previousRoundAssignments: null, minRepeatsInfo: null,
-  });
-}
-
 /* ======================================================================
    DERIVED HELPERS
    ====================================================================== */
@@ -1362,11 +1346,14 @@ function toggleConstraint(id) {
   // like 'avoidRepeats' would silently no-op.
   const current = s.constraintToggles[id] !== false;
   Store.setState({ constraintToggles: { ...s.constraintToggles, [id]: !current } });
-  // Both are ranking-only soft preferences read live off state inside
-  // buildPreferenceScorer, so flipping either needs a re-solve to actually
-  // change anything (unlike a hard constraint, which would need pruning
-  // re-run too, but neither of these ever reaches that path).
-  if (id === 'genderBalance' || id === 'avoidRepeats') refreshPairingsOnBoard();
+  // genderBalance/avoidRepeats are ranking-only soft preferences read live
+  // off state inside buildPreferenceScorer, so flipping either needs a
+  // re-solve to actually change anything. uniCoverage is a hard constraint,
+  // so flipping it needs the same re-solve *plus* fresh pruning — but
+  // refreshPairingsOnBoard already re-runs generateSolutions with whatever
+  // activeHardConstraints(s.constraintToggles) currently returns, so no
+  // separate pruning path is needed here.
+  if (id === 'genderBalance' || id === 'avoidRepeats' || id === 'uniCoverage') refreshPairingsOnBoard();
   saveToStorage();
 }
 function genPairingId() { return 'pr' + Math.random().toString(36).slice(2, 9); }
@@ -1678,30 +1665,12 @@ function renderConfig(s) {
   document.getElementById('config-slots-hint').textContent =
     `${slots} of ${s.students.length} students assigned to slots`;
 
-  const cList = document.getElementById('config-constraints');
-  cList.innerHTML = '';
-  HARD_CONSTRAINTS.forEach(c => {
-    const row = document.createElement('div');
-    row.className = 'constraint-row' + (c.locked ? ' locked' : '');
-    row.innerHTML = `
-      <input type="checkbox" id="c-${c.id}" checked ${c.locked ? 'disabled' : ''}>
-      <label for="c-${c.id}" style="flex:1">
-        <div class="c-label">${c.label}${c.locked ? ' (required)' : ''}</div>
-        <div class="c-desc">${c.desc}</div>
-      </label>`;
-    if (!c.locked) row.querySelector('input').onchange = () => toggleConstraint(c.id);
-    cList.appendChild(row);
-  });
-
   // Pairing rules are edited on the app/team-board screen now (same page as
-  // the roster), not here — this is a read-only summary so a teacher coming
-  // back to "Edit setup" from the app screen can still see what's set.
-  const hardCount = hardPairingsList(s.pairings).length;
-  const prefCount = preferablePairingsList(s.pairings).length;
-  const summaryEl = document.getElementById('config-pairing-summary');
-  summaryEl.textContent = (hardCount || prefCount)
-    ? `${hardCount} hard rule${hardCount === 1 ? '' : 's'}, ${prefCount} preferable rule${prefCount === 1 ? '' : 's'} currently set. Add, remove, or reorder them from the team board after building teams.`
-    : 'None set yet. You can add pairing rules from the team board after building teams.';
+  // the roster), not here. The config screen still validates any existing
+  // pairings against the current team setup below (config-pairing-err) —
+  // that's the one thing here that still needs to surface — but the
+  // read-only "N rules set / none set yet" summary text was removed as
+  // unnecessary; a teacher can just go look at the team board for that.
 
   const validation = validateConfig(s.students, s.numTeams, s.teamSizes);
   const errEl = document.getElementById('config-err');
@@ -1726,12 +1695,36 @@ function renderConfig(s) {
 
 function renderApp(s) {
   renderTeams(s);
-  renderCsvInfo(s);
   renderWarn(s);
+  renderConstraintsPanel(s);
   renderPairingPanel(s);
   const undoBtn = document.getElementById('undo-btn');
   undoBtn.disabled = !s.assignmentHistory || !s.assignmentHistory.length;
   undoBtn.title = undoBtn.disabled ? 'Nothing to undo yet' : 'Undo the last lock/unlock or pairing-rule change';
+}
+
+// Hard constraints (currently just uniCoverage) live in their own small panel
+// on the app screen, separate from the ranked preference list in the pairing
+// panel below: unlike genderBalance/avoidRepeats, a hard constraint isn't a
+// scored, rankable preference — it's a plain on/off gate the solver either
+// enforces or doesn't — so it doesn't belong in state.preferenceOrder.
+function renderConstraintsPanel(s) {
+  const cList = document.getElementById('app-constraints');
+  if (!cList) return;
+  cList.innerHTML = '';
+  HARD_CONSTRAINTS.forEach(c => {
+    const on = c.locked || s.constraintToggles[c.id] !== false;
+    const row = document.createElement('div');
+    row.className = 'constraint-row' + (c.locked ? ' locked' : '');
+    row.innerHTML = `
+      <input type="checkbox" id="c-${c.id}" ${on ? 'checked' : ''} ${c.locked ? 'disabled' : ''}>
+      <label for="c-${c.id}" style="flex:1">
+        <div class="c-label">${c.label}${c.locked ? ' (required)' : ''}</div>
+        <div class="c-desc">${c.desc}</div>
+      </label>`;
+    if (!c.locked) row.querySelector('input').onchange = () => toggleConstraint(c.id);
+    cList.appendChild(row);
+  });
 }
 
 // Pairings the given student is part of, formatted for a pill's title tooltip.
@@ -1934,9 +1927,8 @@ function renderTeamsInner(s, col, unis, filtered, isDead) {
 // count never reflected the true number of valid arrangements and was misleading
 // rather than useful. Star recommendations are unaffected; they only need a
 // best/2nd-best ordering within the sample, not a true count.
-function renderCsvInfo(s) {
-  document.getElementById('csv-info').textContent = `${s.students.length} students loaded`;
-}
+// (The "N students loaded" footer text was removed for the same reason as
+// above: not actionable once you're looking at the actual team board.)
 
 function renderWarn(s) {
   const banner = document.getElementById('warn-banner');
@@ -1968,7 +1960,7 @@ Object.assign(window, {
   Store, parseCSV, TEMPLATE_CSV, getUnis, getFilteredSolutions, getTeamMembers, isFeasibleHere, boardIsFeasible, starLevel,
   evenSplit, validateConfig, generateSolutions, existsValidCompletion, propagateForcedMoves, uniPillStates, genderBadge,
   handleCSV, updateNumTeams, updateTeamSizeAt, distributeEvenly, toggleConstraint, backToUpload, backToConfig,
-  runSolve, toggleLock, resetAssignments, downloadTemplate, clearData, updateTeamName, teamName, defaultTeamName, resizeTeamNames,
+  runSolve, toggleLock, resetAssignments, downloadTemplate, updateTeamName, teamName, defaultTeamName, resizeTeamNames,
   validatePairings, addPairing, addPairingFromForm, removePairing, reorderPreference, pairingLabel, pairingStatus,
   visiblePreferenceEntries, buildPreferenceScorer, hardPairingsList, preferablePairingsList, refreshPairingsOnBoard,
   diagnoseInfeasibility, undoLastAction, pushAssignmentHistory, exportTeams, csvField,
