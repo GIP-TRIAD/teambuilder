@@ -1,4 +1,16 @@
-# Team Builder
+<h1 align="center" style="margin:0;">
+<img src="logo.png" alt="Project logo" width="200">
+</h1>
+<h3 align="center" style="margin: 0; margin-top: 0;">
+Team Builder — bringing people together against their will.
+</h3>
+
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#limitations">Limitations</a>
+</p>
+
+## Overview
 
 A single-file, web app for splitting a class roster into teams.
 
@@ -9,11 +21,12 @@ machine.
 
 ## Features
 
-- **Upload a CSV** of students (`name, university, gender`). 
+- **Upload a CSV** of students (`name, university, gender`).
 - **Configure teams**: choose the number of teams and set each team's size
   individually.
-- **Toggle constraints**: university coverage is a hard requirement; gender balance
-  is a soft preference the app optimizes for.
+- **Toggle constraints**: ensure university coverage and gender balance.
+- **Pairing rules**: optionally require two specific students to be on the same
+  team, or keep them apart.
 - **Click-to-lock board**: click a student's name to lock them into a team. The app
   will:
   - grey out any choice that would make the board unsolvable,
@@ -21,8 +34,6 @@ machine.
     remaining valid option,
   - star its top 1–2 recommended arrangements for whichever students aren't locked
     yet.
-- **Pairing rules**: optionally require two specific students to be on the same
-  team, or keep them apart — either as a hard rule or a soft preference.
 - **Undo / Reset**: step back or start over.
 - **Export**: download the current team composition as a CSV.
 - **Next round, different groups**: once a set of teams is locked in, click **Start
@@ -58,7 +69,7 @@ Team Beta,Dominique,Marseille,F
 
 Only students you've actually locked into a team are listed under that team.
 
-## Known limitations
+## Limitations
 
 - CSV parsing supports basic quoted fields but isn't a full RFC4180 implementation.
 - Not tested for rosters larger than ~15 students.
